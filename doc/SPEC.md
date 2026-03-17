@@ -43,6 +43,15 @@ A task management application that allows authenticated users to manage their da
 - Tasks are persisted in PostgreSQL via Supabase.
 - Row Level Security ensures users can only access their own data.
 
+## Mobile Platforms
+
+- **Approach**: Capacitor wraps the deployed Vercel web app in a native WebView (remote URL strategy).
+- **Platforms**: Android and iOS.
+- **App ID**: `com.vladimirgronat.todolist`
+- **Deep links**: Custom URL scheme (`com.vladimirgronat.todolist://`) handles Google OAuth callback on native devices.
+- **Requires internet** — no offline mode (cloud-synced app).
+- **Google OAuth on native**: Detects native platform via `Capacitor.isNativePlatform()` and uses the custom URL scheme for the OAuth redirect.
+
 ## Non-Functional Requirements
 
 - Responsive UI that works on desktop and mobile screens.
@@ -56,6 +65,7 @@ A task management application that allows authenticated users to manage their da
 - **Backend/Auth**: Supabase (PostgreSQL + Auth)
 - **Hosting**: Vercel
 - **Styling**: Tailwind CSS
+- **Mobile**: Capacitor (Android + iOS native shell)
 - **Testing**: Vitest + React Testing Library (unit/component), Playwright (E2E)
 
 ## Out of Scope
@@ -63,4 +73,5 @@ A task management application that allows authenticated users to manage their da
 - Real-time collaboration.
 - Recurring / scheduled tasks.
 - Notifications and reminders.
-- OAuth / social login (email + password only for now).
+- Offline mode.
+- App store publishing automation.

@@ -1,3 +1,4 @@
+import { Capacitor } from "@capacitor/core";
 import { createClient } from "./supabase";
 
 export const signUp = async (email: string, password: string) => {
@@ -33,10 +34,13 @@ export const getSession = async () => {
 
 export const signInWithGoogle = async () => {
   const supabase = createClient();
+  const redirectTo = Capacitor.isNativePlatform()
+    ? "com.vladimirgronat.todolist://auth/callback"
+    : `${location.origin}/auth/callback`;
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${location.origin}/auth/callback`,
+      redirectTo,
     },
   });
   if (error) throw error;

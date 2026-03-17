@@ -12,6 +12,7 @@ TodoList Demo — a task management app. See `doc/SPEC.md` for the full specific
 - **Hosting**: Vercel
 - **Styling**: Tailwind CSS
 - **Database**: PostgreSQL via Supabase
+- **Mobile**: Capacitor (Android + iOS native WebView shell)
 
 ## Architecture
 
@@ -43,6 +44,9 @@ TodoList Demo — a task management app. See `doc/SPEC.md` for the full specific
 - `npm run dev` — start development server
 - `npm run build` — production build
 - `npm run lint` — lint with ESLint
+- `npm run cap:sync` — sync Capacitor native projects
+- `npm run cap:android` — open Android project in Android Studio
+- `npm run cap:ios` — open iOS project in Xcode
 
 ## Conventions
 
