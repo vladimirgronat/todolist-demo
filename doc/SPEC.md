@@ -6,7 +6,7 @@ A simple todo list application that allows users to manage their daily tasks. Us
 
 ## Features
 
-### Core Functionality
+### Core FunctionalityTest Framework, E2E Tests)
 
 - **Add a task** — Create a new task with a title and optional description.
 - **List tasks** — View all tasks, with the ability to filter by status (all, active, completed).
@@ -42,7 +42,7 @@ A simple todo list application that allows users to manage their daily tasks. Us
 
 ## Tech Stack
 
-_To be decided._ The project is a demo/reference implementation; the stack should be lightweight and easy to understand.
+
 
 ## Out of Scope
 
