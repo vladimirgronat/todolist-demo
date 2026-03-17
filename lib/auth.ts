@@ -30,3 +30,15 @@ export const getSession = async () => {
   } = await supabase.auth.getSession();
   return session;
 };
+
+export const signInWithGoogle = async () => {
+  const supabase = createClient();
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: `${location.origin}/auth/callback`,
+    },
+  });
+  if (error) throw error;
+  return data;
+};

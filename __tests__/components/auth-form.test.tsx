@@ -14,10 +14,12 @@ vi.mock("next/navigation", () => ({
 // Mock auth functions
 const mockSignIn = vi.fn();
 const mockSignUp = vi.fn();
+const mockSignInWithGoogle = vi.fn();
 
 vi.mock("@/lib/auth", () => ({
   signIn: (...args: unknown[]) => mockSignIn(...args),
   signUp: (...args: unknown[]) => mockSignUp(...args),
+  signInWithGoogle: (...args: unknown[]) => mockSignInWithGoogle(...args),
 }));
 
 beforeEach(() => {
@@ -80,5 +82,20 @@ describe("AuthForm", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Invalid credentials"
     );
+  });
+
+  it("renders Google sign-in button", () => {
+    render(<AuthForm />);
+    expect(screen.getByRole("button", { name: "Sign in with Google" })).toBeInTheDocument();
+  });
+
+  it("calls signInWithGoogle when Google button is clicked", async () => {
+    mockSignInWithGoogle.mockResolvedValue({});
+    const user = userEvent.setup();
+    render(<AuthForm />);
+
+    await user.click(screen.getByRole("button", { name: "Sign in with Google" }));
+
+    expect(mockSignInWithGoogle).toHaveBeenCalled();
   });
 });
