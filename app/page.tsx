@@ -2,7 +2,6 @@ import { Suspense } from "react";
 import { TaskForm } from "@/components/task-form";
 import { TaskFilterTabs } from "@/components/task-filter";
 import { TaskList } from "@/components/task-list";
-import { TaskSuggestions } from "@/components/task-suggestions";
 import type { TaskFilter } from "@/types/task";
 
 interface HomeProps {
@@ -40,8 +39,6 @@ export default async function Home({ searchParams }: HomeProps) {
 
       <div className="flex flex-col gap-6">
         <TaskForm />
-
-        <TaskSuggestions />
 
         <TaskFilterTabs />
 

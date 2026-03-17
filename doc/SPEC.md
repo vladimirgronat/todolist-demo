@@ -2,7 +2,7 @@
 
 ## Overview
 
-A task management application that allows authenticated users to manage their daily tasks. Users can create, view, update, and delete tasks through an intuitive interface. AI-powered task suggestions help users stay productive.
+A task management application that allows authenticated users to manage their daily tasks. Users can create, view, update, and delete tasks through an intuitive interface.
 
 ## Features
 
@@ -20,12 +20,6 @@ A task management application that allows authenticated users to manage their da
 - **Complete a task** — Mark a task as done.
 - **Edit a task** — Update the title or description of an existing task.
 - **Delete a task** — Remove a task from the list.
-
-### AI Task Suggestions
-
-- **Suggest tasks** — Use Vectel.ai to generate 2–3 task suggestions based on existing tasks.
-- Users can add suggested tasks with one click.
-- Rate-limited to 5 suggestions per minute per user.
 
 ### Task Model
 
@@ -60,7 +54,7 @@ A task management application that allows authenticated users to manage their da
 - **Framework**: Next.js (App Router)
 - **Language**: TypeScript (strict mode)
 - **Backend/Auth**: Supabase (PostgreSQL + Auth)
-- **AI**: Vectel.ai (task suggestions)
+- **Hosting**: Vercel
 - **Styling**: Tailwind CSS
 - **Testing**: Vitest + React Testing Library (unit/component), Playwright (E2E)
 

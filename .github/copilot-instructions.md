@@ -9,7 +9,7 @@ TodoList Demo — a task management app. See `doc/SPEC.md` for the full specific
 - **Framework**: Next.js (App Router)
 - **Language**: TypeScript (strict mode)
 - **Backend/Auth**: Supabase (PostgreSQL)
-- **AI**: Vectel.ai
+- **Hosting**: Vercel
 - **Styling**: Tailwind CSS
 - **Database**: PostgreSQL via Supabase
 

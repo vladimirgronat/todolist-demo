@@ -2,7 +2,7 @@
 
 ## Overview
 
-Build a Next.js App Router todo app with Supabase (auth + PostgreSQL), Vectel.ai for AI task suggestions, and Tailwind CSS. Automated testing via Vitest + React Testing Library (unit/component) and Playwright (E2E). Six phases, each independently verifiable.
+Build a Next.js App Router todo app with Supabase (auth + PostgreSQL), Tailwind CSS, and Vercel deployment. Automated testing via Vitest + React Testing Library (unit/component) and Playwright (E2E). Five phases, each independently verifiable.
 
 ---
 
@@ -16,7 +16,7 @@ Build a Next.js App Router todo app with Supabase (auth + PostgreSQL), Vectel.ai
 6. Create project folder structure:
    - `app/` — pages, layouts, route handlers
    - `components/` — shared UI components
-   - `lib/` — utilities (`supabase.ts`, `vectel.ts`)
+   - `lib/` — utilities (`supabase.ts`)
    - `types/` — shared TypeScript interfaces
    - `__tests__/` — Vitest unit/component tests
    - `e2e/` — Playwright E2E tests
@@ -93,27 +93,11 @@ Build a Next.js App Router todo app with Supabase (auth + PostgreSQL), Vectel.ai
 
 ---
 
-## Phase 5 — Vectel.ai Integration (AI Task Suggestions)
-
-1. Create `lib/vectel.ts` — Vectel.ai client initialization, API wrapper
-2. Create `app/actions/suggest.ts` — Server Action that takes existing task titles, calls Vectel.ai API, returns 2–3 suggested tasks
-3. Create `components/task-suggestions.tsx` — `"use client"` component: "Suggest tasks" button, shows loading state, displays suggestions with "Add" buttons that call `createTask`
-4. Add input validation/sanitization: rate-limit suggestions (max 5 per minute per user), sanitize AI output before display
-
-**Tests (Vitest)**:
-- `__tests__/actions/suggest.test.ts` — mock Vectel.ai API responses, verify suggestions are returned, verify error handling for API failures
-- `__tests__/components/task-suggestions.test.tsx` — renders button, shows loading spinner, displays suggestions, "Add" calls `createTask`
-
-**Verification**: `npm run test` passes; manual test: click "Suggest tasks" and verify suggestions appear
-
----
-
-## Phase 6 — E2E Tests & Polish
+## Phase 5 — E2E Tests & Polish
 
 1. **Playwright E2E tests** in `e2e/`:
    - `e2e/auth.spec.ts` — sign up with test email, log in, verify redirect to main page, log out
    - `e2e/tasks-crud.spec.ts` — add a task → verify appears in list → edit title → toggle complete → filter to "completed" → verify visible → filter to "active" → verify hidden → delete task → verify removed
-   - `e2e/suggestions.spec.ts` — click suggest → verify suggestions appear → add one → verify in task list
 2. Create `e2e/helpers/auth.ts` — reusable login helper for E2E tests
 3. **UI polish**:
    - Responsive layout (mobile-first Tailwind)
@@ -133,17 +117,14 @@ Build a Next.js App Router todo app with Supabase (auth + PostgreSQL), Vectel.ai
 | `app/page.tsx` | Main task list page |
 | `app/login/page.tsx` | Auth page |
 | `app/actions/tasks.ts` | CRUD server actions |
-| `app/actions/suggest.ts` | AI suggestion server action |
 | `app/auth/callback/route.ts` | OAuth callback |
 | `middleware.ts` | Session refresh |
 | `components/task-list.tsx` | Task list (Server Component) |
 | `components/task-item.tsx` | Single task row |
 | `components/task-form.tsx` | New task form |
 | `components/task-filter.tsx` | Filter tabs |
-| `components/task-suggestions.tsx` | AI suggestions UI |
 | `components/auth-form.tsx` | Login/signup form |
 | `lib/supabase.ts` | Supabase client init |
-| `lib/vectel.ts` | Vectel.ai client init |
 | `lib/tasks.ts` | Data fetching queries |
 | `lib/auth.ts` | Auth helpers |
 | `types/database.ts` | Generated Supabase types |
@@ -161,13 +142,12 @@ Build a Next.js App Router todo app with Supabase (auth + PostgreSQL), Vectel.ai
 | 2 | DB types generate | `npx supabase gen types typescript` |
 | 3 | Auth unit tests | `npm run test -- auth` |
 | 4 | CRUD unit tests | `npm run test -- tasks` |
-| 5 | Suggestion unit tests | `npm run test -- suggest` |
-| 6 | Full E2E suite | `npm run test:e2e` |
+| 5 | Full E2E suite | `npm run test:e2e` |
 | All | Build + lint | `npm run build && npm run lint` |
 
 ## Key Decisions
 
 - **Auth included** — Despite original SPEC saying "out of scope", Supabase Auth is included per user request. Each user sees only their tasks via RLS.
-- **Vectel.ai role** — AI-powered task suggestions (not search).
 - **Two-layer testing** — Vitest (fast, mocked) for unit/component tests + Playwright (browser, real) for E2E.
 - **No test DB for unit tests** — All Supabase calls mocked in Vitest; E2E tests run against a real (or local) Supabase instance.
+- **Vercel hosting** — Zero-config deployment via `vercel` CLI or GitHub integration.
