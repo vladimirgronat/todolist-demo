@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { AppVersionFooter } from "@/components/app-version-footer";
 import { CapacitorInit } from "@/components/capacitor-init";
 import { ServiceWorkerRegistration } from "@/components/sw-registration";
 import "./globals.css";
@@ -46,11 +47,12 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased`}
       >
         <CapacitorInit />
         <ServiceWorkerRegistration />
-        {children}
+        <div className="flex-1">{children}</div>
+        <AppVersionFooter />
       </body>
     </html>
   );
