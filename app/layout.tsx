@@ -46,6 +46,13 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+        {/* Capture beforeinstallprompt before React hydrates */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "window.__pwaInstallEvent=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__pwaInstallEvent=e;});" ,
+          }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased`}
