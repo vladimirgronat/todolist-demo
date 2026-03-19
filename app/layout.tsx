@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AppVersionFooter } from "@/components/app-version-footer";
 import { CapacitorInit } from "@/components/capacitor-init";
+import { PwaInstallBanner } from "@/components/pwa-install-banner";
 import { ServiceWorkerRegistration } from "@/components/sw-registration";
 import "./globals.css";
 
@@ -51,6 +52,7 @@ export default function RootLayout({
       >
         <CapacitorInit />
         <ServiceWorkerRegistration />
+        <PwaInstallBanner />
         <div className="flex-1">{children}</div>
         <AppVersionFooter />
       </body>
