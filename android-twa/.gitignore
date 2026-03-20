@@ -12,5 +12,8 @@ local.properties
 android.keystore
 *.keystore
 
+# APK build artifacts
+*.apk
+
 # Wrapper JAR (downloaded automatically)
 gradle/wrapper/gradle-wrapper.jar
