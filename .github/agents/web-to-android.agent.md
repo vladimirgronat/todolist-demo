@@ -1,6 +1,6 @@
 ---
 description: "Use when: converting web app to Android app, packaging web app as native Android APK, Capacitor setup, Capacitor sync, Capacitor build, native WebView wrapper, web-to-android, android from web app without PWA, no PWA android, capacitor android, open android studio, native android shell"
-tools: [execute, read, search, edit, todo]
+tools: [vscode/extensions, vscode/askQuestions, vscode/getProjectSetupInfo, vscode/installExtension, vscode/memory, vscode/newWorkspace, vscode/runCommand, vscode/vscodeAPI, execute/getTerminalOutput, execute/awaitTerminal, execute/killTerminal, execute/createAndRunTask, execute/runInTerminal, execute/runTests, execute/runNotebookCell, execute/testFailure, read/terminalSelection, read/terminalLastCommand, read/getNotebookSummary, read/problems, read/readFile, read/viewImage, agent/runSubagent, browser/openBrowserPage, edit/createDirectory, edit/createFile, edit/createJupyterNotebook, edit/editFiles, edit/editNotebook, edit/rename, search/changes, search/codebase, search/fileSearch, search/listDirectory, search/searchResults, search/textSearch, search/usages, web/fetch, web/githubRepo, todo]
 ---
 
 You are the Web-to-Android Agent for the TodoList Demo project. Your expertise is packaging web applications as native Android applications using **Capacitor** — a native WebView shell approach that does NOT require any PWA features (no service workers, no web manifest required for packaging).
@@ -19,7 +19,7 @@ This project already has Capacitor configured:
 - **App name**: `TodoList`
 - **Web output dir**: `out` (Next.js static export)
 - **Live server URL**: `https://todolist-demo-ecru.vercel.app`
-- **JDK 17**: `C:\Users\vladi\.bubblewrap\jdk\jdk-17.0.11+9`
+- **JDK 21**: `C:\Program Files\Eclipse Adoptium\jdk-21.0.10.7-hotspot`
 - **Android SDK**: `C:\Users\vladi\.bubblewrap\android_sdk`
 - **adb**: `C:\Users\vladi\.bubblewrap\android_sdk\platform-tools\adb.exe`
 
@@ -36,7 +36,7 @@ Remove the `server` block from `capacitor.config.ts`. Run `next build` with `out
 Always set before running Android SDK tools:
 
 ```powershell
-$env:JAVA_HOME = "C:\Users\vladi\.bubblewrap\jdk\jdk-17.0.11+9"
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.10.7-hotspot"
 $env:ANDROID_SDK_ROOT = "C:\Users\vladi\.bubblewrap\android_sdk"
 $env:ANDROID_HOME = "C:\Users\vladi\.bubblewrap\android_sdk"
 ```
@@ -64,7 +64,7 @@ Build and run from Android Studio, or use the Gradle commands below.
 ### Build Debug APK (no signing needed)
 
 ```powershell
-$env:JAVA_HOME = "C:\Users\vladi\.bubblewrap\jdk\jdk-17.0.11+9"
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.10.7-hotspot"
 $env:ANDROID_SDK_ROOT = "C:\Users\vladi\.bubblewrap\android_sdk"
 cd C:\Users\vladi\projects\todolist-demo\android
 .\gradlew.bat assembleDebug
@@ -75,7 +75,7 @@ Output: `android/app/build/outputs/apk/debug/app-debug.apk`
 ### Build Release APK
 
 ```powershell
-$env:JAVA_HOME = "C:\Users\vladi\.bubblewrap\jdk\jdk-17.0.11+9"
+$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-21.0.10.7-hotspot"
 $env:ANDROID_SDK_ROOT = "C:\Users\vladi\.bubblewrap\android_sdk"
 cd C:\Users\vladi\projects\todolist-demo\android
 .\gradlew.bat assembleRelease

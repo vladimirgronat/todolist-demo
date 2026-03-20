@@ -1,4 +1,5 @@
 import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 import { createClient } from "./supabase";
 
 export const signUp = async (email: string, password: string) => {
@@ -34,15 +35,24 @@ export const getSession = async () => {
 
 export const signInWithGoogle = async () => {
   const supabase = createClient();
-  const redirectTo = Capacitor.isNativePlatform()
+  const isNative = Capacitor.isNativePlatform();
+  const redirectTo = isNative
     ? "com.vladimirgronat.todolist://auth/callback"
     : `${location.origin}/auth/callback`;
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
       redirectTo,
+      skipBrowserRedirect: isNative,
     },
   });
   if (error) throw error;
+
+  // On native, open OAuth URL in system browser so the deep link
+  // redirect brings the user back to the native app
+  if (isNative && data.url) {
+    await Browser.open({ url: data.url });
+  }
+
   return data;
 };

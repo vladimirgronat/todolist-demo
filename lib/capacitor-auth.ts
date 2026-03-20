@@ -1,5 +1,6 @@
 import { Capacitor } from "@capacitor/core";
 import { App } from "@capacitor/app";
+import { Browser } from "@capacitor/browser";
 import { createClient } from "./supabase";
 
 export const setupDeepLinkListener = () => {
@@ -15,6 +16,9 @@ export const setupDeepLinkListener = () => {
 
     const supabase = createClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    // Close the system browser that was opened for OAuth
+    await Browser.close();
 
     if (!error) {
       window.location.href = "/";
