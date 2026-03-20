@@ -1,0 +1,16 @@
+# Build outputs
+build/
+app/build/
+
+# Gradle caches
+.gradle/
+
+# Local SDK paths (machine-specific)
+local.properties
+
+# Signing keystore (sensitive)
+android.keystore
+*.keystore
+
+# Wrapper JAR (downloaded automatically)
+gradle/wrapper/gradle-wrapper.jar

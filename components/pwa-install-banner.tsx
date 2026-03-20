@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore, useState } from "react";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -13,38 +13,51 @@ declare global {
   }
 }
 
+function subscribePwaPrompt(notify: () => void) {
+  const handler = (e: Event) => {
+    e.preventDefault();
+    window.__pwaInstallEvent = e as BeforeInstallPromptEvent;
+    notify();
+  };
+  window.addEventListener("beforeinstallprompt", handler);
+  return () => window.removeEventListener("beforeinstallprompt", handler);
+}
+
 export const PwaInstallBanner = () => {
-  const [visible, setVisible] = useState(false);
-  const [isIos, setIsIos] = useState(false);
-  const [hasNativePrompt, setHasNativePrompt] = useState(false);
+  const hasNativePrompt = useSyncExternalStore(
+    subscribePwaPrompt,
+    () => !!window.__pwaInstallEvent,
+    () => false,
+  );
 
-  useEffect(() => {
-    // Don't show if already installed in standalone mode
-    if (window.matchMedia("(display-mode: standalone)").matches) return;
-    // Don't show if dismissed this session
-    if (sessionStorage.getItem("pwa-banner-dismissed")) return;
+  const isStandalone = useSyncExternalStore(
+    (notify) => {
+      const mq = window.matchMedia("(display-mode: standalone)");
+      mq.addEventListener("change", notify);
+      return () => mq.removeEventListener("change", notify);
+    },
+    () => window.matchMedia("(display-mode: standalone)").matches,
+    () => false,
+  );
 
-    const ios =
+  const isIos = useSyncExternalStore(
+    () => () => {},
+    () =>
       /iphone|ipad|ipod/i.test(navigator.userAgent) &&
-      !(window.navigator as { standalone?: boolean }).standalone;
-    setIsIos(ios);
+      !(window.navigator as { standalone?: boolean }).standalone,
+    () => false,
+  );
 
-    // Check for event captured before React hydrated
-    if (window.__pwaInstallEvent) {
-      setHasNativePrompt(true);
-    }
+  const sessionDismissed = useSyncExternalStore(
+    () => () => {},
+    () => !!sessionStorage.getItem("pwa-banner-dismissed"),
+    () => false,
+  );
 
-    // Also listen in case it fires after mount
-    const handler = (e: Event) => {
-      e.preventDefault();
-      window.__pwaInstallEvent = e as BeforeInstallPromptEvent;
-      setHasNativePrompt(true);
-    };
-    window.addEventListener("beforeinstallprompt", handler);
+  const [dismissed, setDismissed] = useState(false);
+  const [installed, setInstalled] = useState(false);
 
-    setVisible(true);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, []);
+  const visible = !isStandalone && !sessionDismissed && !dismissed && !installed;
 
   const handleInstall = async () => {
     const event = window.__pwaInstallEvent;
@@ -53,14 +66,14 @@ export const PwaInstallBanner = () => {
       const { outcome } = await event.userChoice;
       if (outcome === "accepted") {
         window.__pwaInstallEvent = null;
-        setVisible(false);
+        setInstalled(true);
       }
     }
   };
 
   const handleDismiss = () => {
     sessionStorage.setItem("pwa-banner-dismissed", "1");
-    setVisible(false);
+    setDismissed(true);
   };
 
   if (!visible) return null;

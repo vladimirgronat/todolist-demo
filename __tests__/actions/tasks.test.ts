@@ -22,7 +22,7 @@ const mockSupabase = {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(createServerSupabaseClient).mockResolvedValue(mockSupabase as any);
+  vi.mocked(createServerSupabaseClient).mockResolvedValue(mockSupabase as ReturnType<typeof createServerSupabaseClient> extends Promise<infer T> ? T : never);
   mockSupabase.auth.getUser.mockResolvedValue({
     data: { user: { id: "user-123" } },
   });
