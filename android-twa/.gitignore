@@ -15,6 +15,7 @@ android.keystore
 # APK build artifacts
 *.apk
 *.idsig
+*.zip
 
 # Wrapper JAR (downloaded automatically)
 gradle/wrapper/gradle-wrapper.jar
