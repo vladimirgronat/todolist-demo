@@ -1,3 +1,14 @@
 {
-  "chat.tools.autoApprove": true
+  "chat.tools.autoApprove": true,
+  "chat.tools.terminal.autoApprove": {
+    "\\b(pnpm|npm|yarn|bun)\\b.*\\b(test|build|lint|typecheck|dev)\\b": true,
+    "\\b(git)\\b\\s+(status|diff|log|show|branch)\\b": true,
+    "\\b(git)\\b\\s+(add|commit|switch|checkout|restore)\\b": true,
+    "\\b(npx|pnpm dlx)\\b\\s+playwright\\b.*\\b(test|install)\\b": true,
+
+    "\\b(rm|rmdir|del|erase|kill|pkill|taskkill|shutdown|reboot)\\b": true,
+    "\\b(chmod|chown|sudo)\\b": true,
+    "\\b(curl|wget|Invoke-WebRequest)\\b": true,
+    "\\b(git)\\b\\s+(push|reset|rebase|clean)\\b": true
+  }
 }
