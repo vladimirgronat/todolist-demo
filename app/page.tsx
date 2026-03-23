@@ -141,6 +141,7 @@ export default async function Home({ searchParams }: HomeProps) {
               environmentId={activeEnvironmentId}
               categoryId={categoryId}
               categoriesMap={categoriesMap}
+              categories={flatCategories}
               tagId={tagId}
             />
           </Suspense>

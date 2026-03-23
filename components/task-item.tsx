@@ -12,6 +12,7 @@ import { CompletionPhotoPrompt } from "./completion-photo-prompt";
 import type { Task } from "@/types/task";
 import type { TaskState } from "@/types/task";
 import type { Tag } from "@/types/tag";
+import type { Category } from "@/types/category";
 
 interface BasicTask {
   id: string;
@@ -29,6 +30,7 @@ interface PhotoWithUrl {
 interface TaskItemProps {
   task: Task;
   categoryName?: string;
+  categories?: Category[];
   tags?: Tag[];
   allTags?: Tag[];
   dependencyIds?: string[];
@@ -36,7 +38,7 @@ interface TaskItemProps {
   photoCount?: number;
 }
 
-export const TaskItem = ({ task, categoryName, tags = [], allTags = [], dependencyIds = [], allTasksBasic = [], photoCount = 0 }: TaskItemProps) => {
+export const TaskItem = ({ task, categoryName, categories = [], tags = [], allTags = [], dependencyIds = [], allTasksBasic = [], photoCount = 0 }: TaskItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [taskTags, setTaskTags] = useState<Tag[]>(tags);
@@ -181,6 +183,23 @@ export const TaskItem = ({ task, categoryName, tags = [], allTags = [], dependen
           className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-colors hover:border-gray-300 focus:border-blue-500 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-gray-600 dark:focus:bg-gray-900"
           aria-label="Edit task description"
         />
+
+        {/* Category selector */}
+        {categories.length > 0 && (
+          <select
+            name="category_id"
+            defaultValue={task.category_id ?? ""}
+            className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-colors hover:border-gray-300 focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-gray-600"
+            aria-label="Edit task category"
+          >
+            <option value="">No category</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+        )}
 
         {/* Tag picker */}
         {allTags.length > 0 && (

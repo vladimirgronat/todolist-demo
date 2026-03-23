@@ -6,16 +6,18 @@ import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { TaskItem } from "./task-item";
 import type { TaskFilter } from "@/types/task";
 import type { Tag } from "@/types/tag";
+import type { Category } from "@/types/category";
 
 interface TaskListProps {
   filter: TaskFilter;
   environmentId: string;
   categoryId?: string | null;
   categoriesMap?: Record<string, string>;
+  categories?: Category[];
   tagId?: string | null;
 }
 
-export const TaskList = async ({ filter, environmentId, categoryId, categoriesMap, tagId }: TaskListProps) => {
+export const TaskList = async ({ filter, environmentId, categoryId, categoriesMap, categories = [], tagId }: TaskListProps) => {
   const tasks = await getTasks(environmentId, filter, categoryId, tagId);
   const allTags = await getTags(environmentId);
 
@@ -73,6 +75,7 @@ export const TaskList = async ({ filter, environmentId, categoryId, categoriesMa
           key={task.id}
           task={task}
           categoryName={task.category_id && categoriesMap ? categoriesMap[task.category_id] : undefined}
+          categories={categories}
           tags={taskTagsMap[task.id] ?? []}
           allTags={allTags}
           dependencyIds={depMap[task.id] ?? []}

@@ -49,6 +49,7 @@ export const createTask = async (formData: FormData) => {
 export const updateTask = async (id: string, formData: FormData) => {
   const title = formData.get("title") as string;
   const description = (formData.get("description") as string) || null;
+  const categoryId = (formData.get("category_id") as string) || null;
 
   if (!title || title.trim().length === 0) {
     return { error: "Title is required" };
@@ -72,6 +73,7 @@ export const updateTask = async (id: string, formData: FormData) => {
     .update({
       title: title.trim(),
       description: description?.trim() || null,
+      category_id: categoryId || null,
     })
     .eq("id", id);
 

@@ -16,7 +16,9 @@ export const TagChip = ({ tag, onRemove, onClick, active }: TagChipProps) => {
   const baseClasses =
     "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium transition-colors duration-150";
   const colorClasses = hasColor
-    ? "text-white"
+    ? active === false
+      ? "text-white opacity-40"
+      : "text-white"
     : active
       ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
       : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400";
