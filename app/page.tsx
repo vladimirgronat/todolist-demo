@@ -8,7 +8,7 @@ import { TaskList } from "@/components/task-list";
 import { CategoryTree } from "@/components/category-tree";
 import { EnvironmentSwitcher } from "@/components/environment-switcher";
 import { PendingInvitations } from "@/components/pending-invitations";
-import { getEnvironments, getActiveEnvironmentId } from "@/lib/environments";
+import { getEnvironments, getActiveEnvironmentId, ensurePersonalEnvironment } from "@/lib/environments";
 import { getCategories, buildCategoryTree } from "@/lib/categories";
 import { getTags } from "@/lib/tags";
 import { getPendingInvitations } from "@/lib/teams";
@@ -23,6 +23,8 @@ export default async function Home({ searchParams }: HomeProps) {
   const filter = (params.filter as TaskFilter) || "all";
   const categoryId = params.category || null;
   const tagId = params.tag || null;
+
+  await ensurePersonalEnvironment();
 
   const environments = await getEnvironments();
   const activeEnvironmentId = await getActiveEnvironmentId(params.env);
