@@ -15,9 +15,10 @@ beforeEach(() => {
 
 describe("TaskForm", () => {
   const ENV_ID = "env-123";
+  const USER_ID = "user-123";
 
   it("renders the form", () => {
-    render(<TaskForm environmentId={ENV_ID} />);
+    render(<TaskForm environmentId={ENV_ID} currentUserId={USER_ID} />);
     expect(screen.getByLabelText("Task title")).toBeInTheDocument();
     expect(screen.getByLabelText("Task description")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Add" })).toBeInTheDocument();
@@ -26,7 +27,7 @@ describe("TaskForm", () => {
   it("calls createTask on submit", async () => {
     mockCreateTask.mockResolvedValue({ error: null });
     const user = userEvent.setup();
-    render(<TaskForm environmentId={ENV_ID} />);
+    render(<TaskForm environmentId={ENV_ID} currentUserId={USER_ID} />);
 
     await user.type(screen.getByLabelText("Task title"), "New task");
     await user.click(screen.getByRole("button", { name: "Add" }));
@@ -40,7 +41,7 @@ describe("TaskForm", () => {
   it("shows error when createTask returns error", async () => {
     mockCreateTask.mockResolvedValue({ error: "Title is required" });
     const user = userEvent.setup();
-    render(<TaskForm environmentId={ENV_ID} />);
+    render(<TaskForm environmentId={ENV_ID} currentUserId={USER_ID} />);
 
     await user.type(screen.getByLabelText("Task title"), "x");
     await user.click(screen.getByRole("button", { name: "Add" }));

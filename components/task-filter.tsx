@@ -9,6 +9,9 @@ const filters: { label: string; value: TaskFilter }[] = [
   { label: "In Progress", value: "in_progress" },
   { label: "Dependent", value: "dependent" },
   { label: "Finished", value: "finished" },
+  { label: "Assigned to Me", value: "assigned_to_me" },
+  { label: "I Assigned", value: "i_assigned" },
+  { label: "Refused", value: "refused" },
 ];
 
 export const TaskFilterTabs = () => {
@@ -36,7 +39,9 @@ export const TaskFilterTabs = () => {
           onClick={() => handleFilter(value)}
           className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
             current === value
-              ? "bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-blue-400"
+              ? value === "refused"
+                ? "bg-amber-50 text-amber-700 shadow-sm dark:bg-amber-900/30 dark:text-amber-300"
+                : "bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-blue-400"
               : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
           }`}
         >

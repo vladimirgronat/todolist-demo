@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { changeTaskState, deleteTask, updateTask } from "@/app/actions/tasks";
+import {
+  acceptTaskAssignment,
+  changeTaskState,
+  clearTaskAssignment,
+  deleteTask,
+  refuseTaskAssignment,
+  updateTask,
+} from "@/app/actions/tasks";
 import { addTagToTask, removeTagFromTask } from "@/app/actions/tags";
 import { addDependency, removeDependency } from "@/app/actions/dependencies";
 import { deletePhoto } from "@/app/actions/photos";
@@ -13,6 +20,7 @@ import type { Task } from "@/types/task";
 import type { TaskState } from "@/types/task";
 import type { Tag } from "@/types/tag";
 import type { Category } from "@/types/category";
+import type { EnvironmentMember } from "@/types/environment";
 
 interface BasicTask {
   id: string;
@@ -29,6 +37,8 @@ interface PhotoWithUrl {
 
 interface TaskItemProps {
   task: Task;
+  currentUserId: string;
+  members?: EnvironmentMember[];
   categoryName?: string;
   categories?: Category[];
   tags?: Tag[];
@@ -38,7 +48,18 @@ interface TaskItemProps {
   photoCount?: number;
 }
 
-export const TaskItem = ({ task, categoryName, categories = [], tags = [], allTags = [], dependencyIds = [], allTasksBasic = [], photoCount = 0 }: TaskItemProps) => {
+export const TaskItem = ({
+  task,
+  currentUserId,
+  members = [],
+  categoryName,
+  categories = [],
+  tags = [],
+  allTags = [],
+  dependencyIds = [],
+  allTasksBasic = [],
+  photoCount = 0,
+}: TaskItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [taskTags, setTaskTags] = useState<Tag[]>(tags);
@@ -51,6 +72,16 @@ export const TaskItem = ({ task, categoryName, categories = [], tags = [], allTa
   const [photosLoading, setPhotosLoading] = useState(false);
   const [localPhotoCount, setLocalPhotoCount] = useState(photoCount);
   const [showCompletionPrompt, setShowCompletionPrompt] = useState(false);
+  const [refusalReason, setRefusalReason] = useState("");
+  const [showRefuseForm, setShowRefuseForm] = useState(false);
+  const [assignmentError, setAssignmentError] = useState<string | null>(null);
+
+  const isCreator = task.user_id === currentUserId;
+  const isAssignee = task.assigned_to === currentUserId;
+
+  const assignableMembers = members.filter(
+    (member) => member.joined_at !== null && member.user_id !== task.user_id
+  );
 
   const handleStateChange = async (newState: TaskState) => {
     if (newState === "finished" && task.state !== "finished") {
@@ -100,6 +131,39 @@ export const TaskItem = ({ task, categoryName, categories = [], tags = [], allTa
   const handleDelete = async () => {
     setLoading(true);
     await deleteTask(task.id);
+    setLoading(false);
+  };
+
+  const handleAcceptAssignment = async () => {
+    setAssignmentError(null);
+    setLoading(true);
+    const result = await acceptTaskAssignment(task.id);
+    if (result.error) {
+      setAssignmentError(result.error);
+    }
+    setLoading(false);
+  };
+
+  const handleRefuseAssignment = async () => {
+    setAssignmentError(null);
+    setLoading(true);
+    const result = await refuseTaskAssignment(task.id, refusalReason);
+    if (result.error) {
+      setAssignmentError(result.error);
+    } else {
+      setShowRefuseForm(false);
+      setRefusalReason("");
+    }
+    setLoading(false);
+  };
+
+  const handleClearAssignment = async () => {
+    setAssignmentError(null);
+    setLoading(true);
+    const result = await clearTaskAssignment(task.id);
+    if (result.error) {
+      setAssignmentError(result.error);
+    }
     setLoading(false);
   };
 
@@ -201,6 +265,22 @@ export const TaskItem = ({ task, categoryName, categories = [], tags = [], allTa
           </select>
         )}
 
+        {isCreator && assignableMembers.length > 0 && (
+          <select
+            name="assigned_to"
+            defaultValue={task.assigned_to ?? ""}
+            className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-colors hover:border-gray-300 focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-gray-600"
+            aria-label="Edit task assignee"
+          >
+            <option value="">Unassigned</option>
+            {assignableMembers.map((member) => (
+              <option key={member.id} value={member.user_id}>
+                {member.user_id.slice(0, 8)}...
+              </option>
+            ))}
+          </select>
+        )}
+
         {/* Tag picker */}
         {allTags.length > 0 && (
           <div className="space-y-1">
@@ -257,6 +337,11 @@ export const TaskItem = ({ task, categoryName, categories = [], tags = [], allTa
       </select>
 
       <div className="flex-1 min-w-0">
+        {assignmentError && (
+          <p className="mb-2 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+            {assignmentError}
+          </p>
+        )}
         <div className="flex items-center gap-2">
           <p
             className={`font-medium ${task.state === "finished" ? "line-through text-gray-400" : ""}`}
@@ -271,6 +356,25 @@ export const TaskItem = ({ task, categoryName, categories = [], tags = [], allTa
           {task.state === "dependent" && (
             <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
               Blocked
+            </span>
+          )}
+          {task.assigned_to && (
+            <span
+              className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
+                task.assignment_status === "refused"
+                  ? "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+                  : task.assignment_status === "accepted"
+                    ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
+                    : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
+              }`}
+            >
+              {task.assignment_status === "refused"
+                ? `Refused by ${task.assigned_to.slice(0, 8)}...`
+                : task.assignment_status === "accepted"
+                  ? `Accepted by ${task.assigned_to.slice(0, 8)}...`
+                  : task.assigned_to === currentUserId
+                    ? "Assigned to you"
+                    : `Assigned to ${task.assigned_to.slice(0, 8)}...`}
             </span>
           )}
           {localDepIds.length > 0 && (
@@ -300,6 +404,58 @@ export const TaskItem = ({ task, categoryName, categories = [], tags = [], allTa
         </div>
         {task.description && (
           <p className="text-sm text-gray-500 truncate">{task.description}</p>
+        )}
+        {task.assignment_status === "refused" && task.refusal_reason && (
+          <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-300">
+            <p className="font-medium">Refusal reason</p>
+            <p className="mt-1 whitespace-pre-wrap">{task.refusal_reason}</p>
+          </div>
+        )}
+
+        {isAssignee && task.assignment_status === "pending" && (
+          <div className="mt-2 flex flex-col gap-2 rounded-lg border border-blue-200 bg-blue-50 p-2 dark:border-blue-900 dark:bg-blue-950/30">
+            <p className="text-xs text-blue-700 dark:text-blue-300">
+              This task was assigned to you. Accept it or refuse with an explanation.
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleAcceptAssignment}
+                disabled={loading}
+                className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+              >
+                Accept
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowRefuseForm((prev) => !prev)}
+                disabled={loading}
+                className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 disabled:opacity-50 dark:border-amber-700 dark:text-amber-300 dark:hover:bg-amber-900/30"
+              >
+                Refuse
+              </button>
+            </div>
+            {showRefuseForm && (
+              <div className="flex flex-col gap-2">
+                <textarea
+                  value={refusalReason}
+                  onChange={(e) => setRefusalReason(e.target.value)}
+                  maxLength={500}
+                  placeholder="Why are you refusing this task?"
+                  className="min-h-[72px] rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-xs text-gray-700 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200"
+                  aria-label="Refusal explanation"
+                />
+                <button
+                  type="button"
+                  onClick={handleRefuseAssignment}
+                  disabled={loading}
+                  className="self-start rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+                >
+                  Submit refusal
+                </button>
+              </div>
+            )}
+          </div>
         )}
         {/* Assigned tags */}
         {taskTags.length > 0 && (
@@ -438,9 +594,21 @@ export const TaskItem = ({ task, categoryName, categories = [], tags = [], allTa
       </div>
 
       <div className="flex gap-1 shrink-0">
+        {isCreator && task.assigned_to && (
+          <button
+            type="button"
+            onClick={handleClearAssignment}
+            disabled={loading}
+            className="rounded-lg px-2.5 py-2 text-xs font-medium text-amber-700 transition-colors duration-150 hover:bg-amber-50 dark:text-amber-300 dark:hover:bg-amber-900/30 disabled:opacity-50"
+            aria-label={`Unassign "${task.title}"`}
+            title="Unassign"
+          >
+            Unassign
+          </button>
+        )}
         <button
           onClick={togglePhotos}
-          className="rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          className="rounded-lg p-2 text-gray-500 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-700 active:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
           aria-label={`Attach photo to "${task.title}"`}
           title="Attach photo"
         >
@@ -450,7 +618,7 @@ export const TaskItem = ({ task, categoryName, categories = [], tags = [], allTa
         </button>
         <button
           onClick={() => setIsEditing(true)}
-          className="rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          className="rounded-lg px-2.5 py-2 text-sm font-medium text-gray-600 transition-colors duration-150 hover:bg-gray-100 hover:text-gray-800 active:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-300"
           aria-label={`Edit "${task.title}"`}
         >
           Edit
@@ -458,7 +626,7 @@ export const TaskItem = ({ task, categoryName, categories = [], tags = [], allTa
         <button
           onClick={handleDelete}
           disabled={loading}
-          className="rounded px-2 py-1 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 disabled:opacity-50"
+          className="rounded-lg px-2.5 py-2 text-sm font-medium text-red-600 transition-colors duration-150 hover:bg-red-50 hover:text-red-700 active:bg-red-100 dark:text-red-400 dark:hover:bg-red-900/30 dark:hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
           aria-label={`Delete "${task.title}"`}
         >
           Delete

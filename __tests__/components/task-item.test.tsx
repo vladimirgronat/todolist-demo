@@ -7,10 +7,16 @@ import type { Task } from "@/types/task";
 const mockChangeTaskState = vi.fn();
 const mockDeleteTask = vi.fn();
 const mockUpdateTask = vi.fn();
+const mockAcceptTaskAssignment = vi.fn();
+const mockRefuseTaskAssignment = vi.fn();
+const mockClearTaskAssignment = vi.fn();
 
 vi.mock("@/app/actions/tasks", () => ({
+  acceptTaskAssignment: (...args: unknown[]) => mockAcceptTaskAssignment(...args),
   changeTaskState: (...args: unknown[]) => mockChangeTaskState(...args),
+  clearTaskAssignment: (...args: unknown[]) => mockClearTaskAssignment(...args),
   deleteTask: (...args: unknown[]) => mockDeleteTask(...args),
+  refuseTaskAssignment: (...args: unknown[]) => mockRefuseTaskAssignment(...args),
   updateTask: (...args: unknown[]) => mockUpdateTask(...args),
 }));
 
@@ -29,26 +35,29 @@ const mockTask: Task = {
 beforeEach(() => {
   vi.clearAllMocks();
   mockChangeTaskState.mockResolvedValue({ error: null });
+  mockAcceptTaskAssignment.mockResolvedValue({ error: null });
+  mockRefuseTaskAssignment.mockResolvedValue({ error: null });
+  mockClearTaskAssignment.mockResolvedValue({ error: null });
   mockDeleteTask.mockResolvedValue({ error: null });
   mockUpdateTask.mockResolvedValue({ error: null });
 });
 
 describe("TaskItem", () => {
   it("renders task title and description", () => {
-    render(<TaskItem task={mockTask} />);
+    render(<TaskItem task={mockTask} currentUserId="user-1" />);
     expect(screen.getByText("Test task")).toBeInTheDocument();
     expect(screen.getByText("Test description")).toBeInTheDocument();
   });
 
   it("shows strikethrough for finished tasks", () => {
-    render(<TaskItem task={{ ...mockTask, state: "finished" }} />);
+    render(<TaskItem task={{ ...mockTask, state: "finished" }} currentUserId="user-1" />);
     const title = screen.getByText("Test task");
     expect(title).toHaveClass("line-through");
   });
 
   it("calls changeTaskState when state is changed", async () => {
     const user = userEvent.setup();
-    render(<TaskItem task={mockTask} />);
+    render(<TaskItem task={mockTask} currentUserId="user-1" />);
 
     await user.selectOptions(
       screen.getByLabelText('Change state of "Test task"'),
@@ -59,7 +68,7 @@ describe("TaskItem", () => {
 
   it("calls deleteTask when delete button is clicked", async () => {
     const user = userEvent.setup();
-    render(<TaskItem task={mockTask} />);
+    render(<TaskItem task={mockTask} currentUserId="user-1" />);
 
     await user.click(screen.getByLabelText('Delete "Test task"'));
     expect(mockDeleteTask).toHaveBeenCalledWith("task-1");
@@ -67,7 +76,7 @@ describe("TaskItem", () => {
 
   it("enters edit mode and saves", async () => {
     const user = userEvent.setup();
-    render(<TaskItem task={mockTask} />);
+    render(<TaskItem task={mockTask} currentUserId="user-1" />);
 
     await user.click(screen.getByLabelText('Edit "Test task"'));
     expect(screen.getByLabelText("Edit task title")).toBeInTheDocument();

@@ -85,6 +85,10 @@ export interface Database {
           description: string | null;
           state: string;
           category_id: string | null;
+          assigned_to: string | null;
+          assignment_status: string | null;
+          refusal_reason: string | null;
+          assigned_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -96,6 +100,10 @@ export interface Database {
           description?: string | null;
           state?: string;
           category_id?: string | null;
+          assigned_to?: string | null;
+          assignment_status?: string | null;
+          refusal_reason?: string | null;
+          assigned_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -107,6 +115,10 @@ export interface Database {
           description?: string | null;
           state?: string;
           category_id?: string | null;
+          assigned_to?: string | null;
+          assignment_status?: string | null;
+          refusal_reason?: string | null;
+          assigned_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };

@@ -2,7 +2,7 @@
 
 ## Overview
 
-A task management application that allows authenticated users to manage their daily tasks across multiple environments. Users can create, view, update, and delete tasks through an intuitive interface — solo or collaboratively within shared team environments. Tasks are organized with hierarchical categories, cross-cutting tags, stateful workflows, dependency tracking, and photo attachments.
+A task management application that allows authenticated users to manage their daily tasks across multiple environments. Users can create, view, update, and delete tasks through an intuitive interface — solo or collaboratively within shared team environments. Tasks are organized with hierarchical categories, cross-cutting tags, stateful workflows, dependency tracking, and photo attachments. In shared environments, users can assign tasks to other members and those assignees can accept or refuse with an explanation.
 
 ## Features
 
@@ -40,6 +40,22 @@ A task management application that allows authenticated users to manage their da
 - **Delete a task** — Remove a task and its dependency links and photos from the environment.
 - **Assign dependencies** — Link tasks so one blocks another until finished.
 - **Attach photos** — Upload up to 10 photos per task; optionally attach a completion photo when finishing.
+
+### Task Assignment (team environments)
+
+- In an environment with multiple joined members, a task creator can assign a task to another joined member.
+- Assignment statuses:
+	- **pending** — waiting for assignee decision.
+	- **accepted** — assignee accepted responsibility for the task.
+	- **refused** — assignee refused and provided a required explanation.
+- Refusal explanation is required and limited to 500 characters.
+- Creator can unassign a task at any time.
+- Re-assigning a task sets status back to **pending** and clears previous refusal reason.
+
+Assignee actions:
+
+- **Accept** assignment.
+- **Refuse** assignment with explanation.
 
 ### Categories (hierarchical)
 
@@ -100,6 +116,10 @@ Rules:
 ### Filtering & Sorting
 
 - Filter tasks by state: **All**, **Planned**, **In Progress**, **Dependent**, **Finished**.
+- Additional team filters:
+	- **Assigned to Me** — tasks where current user is assignee.
+	- **I Assigned** — tasks assigned by current user.
+	- **Refused** — tasks assigned by current user that were refused.
 - Filter by **category** (including an "Uncategorized" option).
 - Filter by **tag** (any matching tag).
 - Sort by creation date, state, or category.
@@ -168,6 +188,10 @@ Rules:
 | title          | text        | yes      | Short summary (max 200 chars)                                        |
 | description    | text        | no       | Additional details                                                   |
 | state          | text        | yes      | `planned` / `in_progress` / `dependent` / `finished` (default: `planned`) |
+| assigned_to    | uuid        | no       | Assignee (FK → auth.users, nullable for unassigned tasks)           |
+| assignment_status | text     | no       | `pending` / `accepted` / `refused` (nullable for unassigned tasks)  |
+| refusal_reason | text        | no       | Required when `assignment_status = refused` (max 500 chars)         |
+| assigned_at    | timestamptz | no       | Timestamp when task was assigned/re-assigned                         |
 | created_at     | timestamptz | yes      | Timestamp of creation                                                |
 | updated_at     | timestamptz | yes      | Timestamp of last modification                                       |
 

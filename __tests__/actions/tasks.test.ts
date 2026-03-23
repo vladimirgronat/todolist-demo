@@ -70,13 +70,15 @@ describe("createTask", () => {
     const result = await createTask(formData);
     expect(result.error).toBeNull();
     expect(mockSupabase.from).toHaveBeenCalledWith("tasks");
-    expect(insertMock).toHaveBeenCalledWith({
-      user_id: "user-123",
-      environment_id: "env-456",
-      title: "Buy groceries",
-      description: "Milk, eggs, bread",
-      category_id: null,
-    });
+    expect(insertMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: "user-123",
+        environment_id: "env-456",
+        title: "Buy groceries",
+        description: "Milk, eggs, bread",
+        category_id: null,
+      })
+    );
   });
 });
 

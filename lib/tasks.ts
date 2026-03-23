@@ -1,4 +1,4 @@
-import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { createServerSupabaseClient, getAuthenticatedUser } from "@/lib/supabase-server";
 import type { Task, TaskFilter } from "@/types/task";
 
 export const getTasks = async (
@@ -8,6 +8,7 @@ export const getTasks = async (
   tagId?: string | null
 ): Promise<Task[]> => {
   const supabase = await createServerSupabaseClient();
+  const user = await getAuthenticatedUser();
 
   let query = supabase
     .from("tasks")
@@ -15,8 +16,32 @@ export const getTasks = async (
     .eq("environment_id", environmentId)
     .order("created_at", { ascending: false });
 
-  if (filter !== "all") {
+  if (["planned", "in_progress", "dependent", "finished"].includes(filter)) {
     query = query.eq("state", filter);
+  }
+
+  if (filter === "assigned_to_me") {
+    if (!user) {
+      return [];
+    }
+    query = query.eq("assigned_to", user.id);
+  }
+
+  if (filter === "i_assigned") {
+    if (!user) {
+      return [];
+    }
+    query = query.eq("user_id", user.id).not("assigned_to", "is", null);
+  }
+
+  if (filter === "refused") {
+    if (!user) {
+      return [];
+    }
+    query = query
+      .eq("user_id", user.id)
+      .eq("assignment_status", "refused")
+      .order("updated_at", { ascending: false });
   }
 
   if (categoryId === "uncategorized") {

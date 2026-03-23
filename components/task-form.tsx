@@ -3,15 +3,27 @@
 import { useState } from "react";
 import { createTask } from "@/app/actions/tasks";
 import type { Category } from "@/types/category";
+import type { EnvironmentMember } from "@/types/environment";
 
 interface TaskFormProps {
   environmentId: string;
+  currentUserId: string;
   categories?: Category[];
+  members?: EnvironmentMember[];
 }
 
-export const TaskForm = ({ environmentId, categories }: TaskFormProps) => {
+export const TaskForm = ({
+  environmentId,
+  currentUserId,
+  categories,
+  members = [],
+}: TaskFormProps) => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const assignableMembers = members.filter(
+    (member) => member.joined_at !== null && member.user_id !== currentUserId
+  );
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -63,7 +75,7 @@ export const TaskForm = ({ environmentId, categories }: TaskFormProps) => {
 
       <input type="hidden" name="environment_id" value={environmentId} />
 
-      <div className="flex gap-2">
+      <div className="flex flex-col gap-2 sm:flex-row">
         {categories && categories.length > 0 && (
           <select
             name="category_id"
@@ -87,6 +99,21 @@ export const TaskForm = ({ environmentId, categories }: TaskFormProps) => {
           className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-colors placeholder:text-gray-400 hover:border-gray-300 focus:border-blue-500 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:hover:border-gray-600 dark:focus:border-blue-500 dark:focus:bg-gray-900"
           aria-label="Task description"
         />
+        {assignableMembers.length > 0 && (
+          <select
+            name="assigned_to"
+            defaultValue=""
+            className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-colors hover:border-gray-300 focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-gray-600"
+            aria-label="Assign task to member"
+          >
+            <option value="">Unassigned</option>
+            {assignableMembers.map((member) => (
+              <option key={member.id} value={member.user_id}>
+                {member.user_id.slice(0, 8)}...
+              </option>
+            ))}
+          </select>
+        )}
       </div>
     </form>
   );

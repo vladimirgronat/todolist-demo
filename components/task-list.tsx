@@ -7,17 +7,29 @@ import { TaskItem } from "./task-item";
 import type { TaskFilter } from "@/types/task";
 import type { Tag } from "@/types/tag";
 import type { Category } from "@/types/category";
+import type { EnvironmentMember } from "@/types/environment";
 
 interface TaskListProps {
   filter: TaskFilter;
   environmentId: string;
+  currentUserId: string;
   categoryId?: string | null;
   categoriesMap?: Record<string, string>;
   categories?: Category[];
+  members?: EnvironmentMember[];
   tagId?: string | null;
 }
 
-export const TaskList = async ({ filter, environmentId, categoryId, categoriesMap, categories = [], tagId }: TaskListProps) => {
+export const TaskList = async ({
+  filter,
+  environmentId,
+  currentUserId,
+  categoryId,
+  categoriesMap,
+  categories = [],
+  members = [],
+  tagId,
+}: TaskListProps) => {
   const tasks = await getTasks(environmentId, filter, categoryId, tagId);
   const allTags = await getTags(environmentId);
 
@@ -59,11 +71,17 @@ export const TaskList = async ({ filter, environmentId, categoryId, categoriesMa
   }));
 
   if (tasks.length === 0) {
+    const filterMessageMap: Partial<Record<TaskFilter, string>> = {
+      refused: "No refused tasks.",
+      assigned_to_me: "No tasks assigned to you.",
+      i_assigned: "You have not assigned any tasks.",
+    };
+
     return (
       <p className="text-center text-gray-400 py-8">
         {filter === "all"
           ? "No tasks yet. Add one above!"
-          : `No ${filter} tasks.`}
+          : filterMessageMap[filter] ?? `No ${filter} tasks.`}
       </p>
     );
   }
@@ -81,6 +99,8 @@ export const TaskList = async ({ filter, environmentId, categoryId, categoriesMa
           dependencyIds={depMap[task.id] ?? []}
           allTasksBasic={allTasksBasic}
           photoCount={photoCountMap[task.id] ?? 0}
+          currentUserId={currentUserId}
+          members={members}
         />
       ))}
     </div>
