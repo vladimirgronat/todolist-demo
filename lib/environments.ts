@@ -8,39 +8,31 @@ export const ensurePersonalEnvironment = async (): Promise<void> => {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    console.log("[ensureEnv] No user found");
     return;
   }
 
-  console.log("[ensureEnv] User:", user.id);
-
-  const { data: members, error: memberErr } = await supabase
+  const { data: members } = await supabase
     .from("environment_members")
     .select("id")
     .eq("user_id", user.id)
     .not("joined_at", "is", null)
     .limit(1);
 
-  console.log("[ensureEnv] Existing members:", members?.length, "error:", memberErr?.message);
-
   if (members && members.length > 0) return;
 
-  const { data: env, error: envErr } = await supabase
+  const { data: env } = await supabase
     .from("environments")
     .insert({ name: "Personal", owner_id: user.id })
     .select("id")
     .single();
 
-  console.log("[ensureEnv] Created env:", env?.id, "error:", envErr?.message);
-
   if (env) {
-    const { error: memInsertErr } = await supabase.from("environment_members").insert({
+    await supabase.from("environment_members").insert({
       environment_id: env.id,
       user_id: user.id,
       role: "owner",
       joined_at: new Date().toISOString(),
     });
-    console.log("[ensureEnv] Added member, error:", memInsertErr?.message);
   }
 };
 

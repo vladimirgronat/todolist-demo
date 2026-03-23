@@ -12,8 +12,24 @@
  *   npm run db:migrate
  */
 
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+
+// Load .env.local if present (no dotenv dependency needed)
+const envLocalPath = join(process.cwd(), ".env.local");
+if (existsSync(envLocalPath)) {
+  for (const line of readFileSync(envLocalPath, "utf-8").split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const eqIdx = trimmed.indexOf("=");
+    if (eqIdx === -1) continue;
+    const key = trimmed.slice(0, eqIdx).trim();
+    const val = trimmed.slice(eqIdx + 1).trim();
+    if (!process.env[key]) {
+      process.env[key] = val;
+    }
+  }
+}
 
 const PROJECT_REF =
   process.env.SUPABASE_PROJECT_REF ??
@@ -21,7 +37,7 @@ const PROJECT_REF =
     /https:\/\/([^.]+)\.supabase\.co/
   )?.[1];
 const ACCESS_TOKEN = process.env.SUPABASE_ACCESS_TOKEN;
-const MIGRATIONS_DIR = join(import.meta.dirname, "..", "supabase", "migrations");
+const MIGRATIONS_DIR = join(process.cwd(), "supabase", "migrations");
 const API_BASE = "https://api.supabase.com";
 
 if (!PROJECT_REF || !ACCESS_TOKEN) {
@@ -123,9 +139,16 @@ const main = async () => {
     // Run migration
     const { error } = await runSQL(migration.sql);
     if (error) {
-      console.error(`  ✗ FAILED: ${migration.name}`);
-      console.error(`    ${error}`);
-      process.exit(1);
+      // If the error is just "already exists", treat as success and record it
+      const alreadyExists =
+        typeof error === "string" && /already exists/.test(error);
+      if (alreadyExists) {
+        console.log(`  ~ ${migration.name} (skipped — objects already exist)`);
+      } else {
+        console.error(`  ✗ FAILED: ${migration.name}`);
+        console.error(`    ${error}`);
+        process.exit(1);
+      }
     }
 
     // Record in _migrations
