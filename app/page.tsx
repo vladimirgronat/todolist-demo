@@ -130,6 +130,7 @@ export default async function Home({ searchParams }: HomeProps) {
           </div>
 
           <Suspense
+            key={`${filter}-${activeEnvironmentId}-${categoryId}-${tagId}`}
             fallback={
               <div className="flex justify-center py-12">
                 <div className="h-7 w-7 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
