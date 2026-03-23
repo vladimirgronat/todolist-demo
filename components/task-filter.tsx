@@ -5,8 +5,10 @@ import type { TaskFilter } from "@/types/task";
 
 const filters: { label: string; value: TaskFilter }[] = [
   { label: "All", value: "all" },
-  { label: "Active", value: "active" },
-  { label: "Completed", value: "completed" },
+  { label: "Planned", value: "planned" },
+  { label: "In Progress", value: "in_progress" },
+  { label: "Dependent", value: "dependent" },
+  { label: "Finished", value: "finished" },
 ];
 
 export const TaskFilterTabs = () => {

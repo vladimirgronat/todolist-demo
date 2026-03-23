@@ -1,21 +1,98 @@
 "use client";
 
 import { useState } from "react";
-import { toggleTask, deleteTask, updateTask } from "@/app/actions/tasks";
+import { changeTaskState, deleteTask, updateTask } from "@/app/actions/tasks";
+import { addTagToTask, removeTagFromTask } from "@/app/actions/tags";
+import { addDependency, removeDependency } from "@/app/actions/dependencies";
+import { deletePhoto } from "@/app/actions/photos";
+import { TagChip } from "./tag-chip";
+import { PhotoGrid } from "./photo-grid";
+import { PhotoUpload } from "./photo-upload";
+import { CompletionPhotoPrompt } from "./completion-photo-prompt";
 import type { Task } from "@/types/task";
+import type { TaskState } from "@/types/task";
+import type { Tag } from "@/types/tag";
+
+interface BasicTask {
+  id: string;
+  title: string;
+  state: string;
+}
+
+interface PhotoWithUrl {
+  id: string;
+  url: string;
+  filename: string;
+  is_completion_photo: boolean;
+}
 
 interface TaskItemProps {
   task: Task;
+  categoryName?: string;
+  tags?: Tag[];
+  allTags?: Tag[];
+  dependencyIds?: string[];
+  allTasksBasic?: BasicTask[];
+  photoCount?: number;
 }
 
-export const TaskItem = ({ task }: TaskItemProps) => {
+export const TaskItem = ({ task, categoryName, tags = [], allTags = [], dependencyIds = [], allTasksBasic = [], photoCount = 0 }: TaskItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [taskTags, setTaskTags] = useState<Tag[]>(tags);
+  const [showTagPicker, setShowTagPicker] = useState(false);
+  const [showDeps, setShowDeps] = useState(false);
+  const [localDepIds, setLocalDepIds] = useState<string[]>(dependencyIds);
+  const [depLoading, setDepLoading] = useState(false);
+  const [showPhotos, setShowPhotos] = useState(false);
+  const [photos, setPhotos] = useState<PhotoWithUrl[]>([]);
+  const [photosLoading, setPhotosLoading] = useState(false);
+  const [localPhotoCount, setLocalPhotoCount] = useState(photoCount);
+  const [showCompletionPrompt, setShowCompletionPrompt] = useState(false);
 
-  const handleToggle = async () => {
+  const handleStateChange = async (newState: TaskState) => {
+    if (newState === "finished" && task.state !== "finished") {
+      setShowCompletionPrompt(true);
+      return;
+    }
     setLoading(true);
-    await toggleTask(task.id, task.completed);
+    await changeTaskState(task.id, newState);
     setLoading(false);
+  };
+
+  const completeFinish = async () => {
+    setShowCompletionPrompt(false);
+    setLoading(true);
+    await changeTaskState(task.id, "finished");
+    setLoading(false);
+  };
+
+  const loadPhotos = async () => {
+    setPhotosLoading(true);
+    try {
+      const res = await fetch(`/api/photos?task_id=${encodeURIComponent(task.id)}`);
+      const json = await res.json();
+      if (json.data) setPhotos(json.data);
+    } finally {
+      setPhotosLoading(false);
+    }
+  };
+
+  const togglePhotos = () => {
+    const next = !showPhotos;
+    setShowPhotos(next);
+    if (next && photos.length === 0) loadPhotos();
+  };
+
+  const handleDeletePhoto = async (photoId: string) => {
+    setPhotos((prev) => prev.filter((p) => p.id !== photoId));
+    setLocalPhotoCount((c) => Math.max(0, c - 1));
+    await deletePhoto(photoId);
+  };
+
+  const handleUploadComplete = () => {
+    setLocalPhotoCount((c) => c + 1);
+    loadPhotos();
   };
 
   const handleDelete = async () => {
@@ -33,11 +110,60 @@ export const TaskItem = ({ task }: TaskItemProps) => {
     setLoading(false);
   };
 
+  const handleToggleTag = async (tag: Tag) => {
+    const isAssigned = taskTags.some((t) => t.id === tag.id);
+    if (isAssigned) {
+      setTaskTags((prev) => prev.filter((t) => t.id !== tag.id));
+      await removeTagFromTask(task.id, tag.id);
+    } else {
+      setTaskTags((prev) => [...prev, tag]);
+      await addTagToTask(task.id, tag.id);
+    }
+  };
+
+  const handleRemoveTag = async (tagId: string) => {
+    setTaskTags((prev) => prev.filter((t) => t.id !== tagId));
+    await removeTagFromTask(task.id, tagId);
+  };
+
+  const handleAddDependency = async (depTaskId: string) => {
+    if (!depTaskId || localDepIds.includes(depTaskId)) return;
+    setDepLoading(true);
+    setLocalDepIds((prev) => [...prev, depTaskId]);
+    const formData = new FormData();
+    formData.set("task_id", task.id);
+    formData.set("depends_on_task_id", depTaskId);
+    const result = await addDependency(formData);
+    if (result.error) {
+      setLocalDepIds((prev) => prev.filter((id) => id !== depTaskId));
+    }
+    setDepLoading(false);
+  };
+
+  const handleRemoveDependency = async (depTaskId: string) => {
+    setDepLoading(true);
+    setLocalDepIds((prev) => prev.filter((id) => id !== depTaskId));
+    const formData = new FormData();
+    formData.set("task_id", task.id);
+    formData.set("depends_on_task_id", depTaskId);
+    const result = await removeDependency(formData);
+    if (result.error) {
+      setLocalDepIds((prev) => [...prev, depTaskId]);
+    }
+    setDepLoading(false);
+  };
+
+  const depTaskMap = new Map(allTasksBasic.map((t) => [t.id, t]));
+  const availableForDep = allTasksBasic.filter(
+    (t) => t.id !== task.id && !localDepIds.includes(t.id)
+  );
+
   if (isEditing) {
     return (
       <form
         onSubmit={handleUpdate}
         className="flex flex-col gap-2 rounded border p-3"
+        data-testid="task-item"
       >
         <input
           name="title"
@@ -55,6 +181,27 @@ export const TaskItem = ({ task }: TaskItemProps) => {
           className="rounded border px-3 py-2"
           aria-label="Edit task description"
         />
+
+        {/* Tag picker */}
+        {allTags.length > 0 && (
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Tags:</p>
+            <div className="flex flex-wrap gap-1">
+              {allTags.map((tag) => {
+                const isAssigned = taskTags.some((t) => t.id === tag.id);
+                return (
+                  <TagChip
+                    key={tag.id}
+                    tag={tag}
+                    onClick={() => handleToggleTag(tag)}
+                    active={isAssigned}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <div className="flex gap-2">
           <button
             type="submit"
@@ -76,24 +223,209 @@ export const TaskItem = ({ task }: TaskItemProps) => {
   }
 
   return (
-    <div className="flex items-center gap-3 rounded border p-3">
-      <input
-        type="checkbox"
-        checked={task.completed}
-        onChange={handleToggle}
+    <div className="flex items-center gap-3 rounded border p-3" data-testid="task-item">
+      <select
+        value={task.state}
+        onChange={(e) => handleStateChange(e.target.value as TaskState)}
         disabled={loading}
-        className="h-5 w-5 shrink-0"
-        aria-label={`Mark "${task.title}" as ${task.completed ? "active" : "completed"}`}
-      />
+        className="shrink-0 rounded border px-2 py-1 text-sm"
+        aria-label={`Change state of "${task.title}"`}
+      >
+        <option value="planned">Planned</option>
+        <option value="in_progress">In Progress</option>
+        <option value="dependent">Dependent</option>
+        <option value="finished">Finished</option>
+      </select>
 
       <div className="flex-1 min-w-0">
-        <p
-          className={`font-medium ${task.completed ? "line-through text-gray-400" : ""}`}
-        >
-          {task.title}
-        </p>
+        <div className="flex items-center gap-2">
+          <p
+            className={`font-medium ${task.state === "finished" ? "line-through text-gray-400" : ""}`}
+          >
+            {task.title}
+          </p>
+          {categoryName && (
+            <span className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+              {categoryName}
+            </span>
+          )}
+          {task.state === "dependent" && (
+            <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+              Blocked
+            </span>
+          )}
+          {localDepIds.length > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowDeps(!showDeps)}
+              className="shrink-0 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors duration-150"
+              aria-label={`${localDepIds.length} dependencies, click to toggle`}
+            >
+              {localDepIds.length} dep{localDepIds.length !== 1 ? "s" : ""}
+            </button>
+          )}
+          {localPhotoCount > 0 && (
+            <button
+              type="button"
+              onClick={togglePhotos}
+              className="shrink-0 flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors duration-150"
+              aria-label={`${localPhotoCount} photo${localPhotoCount !== 1 ? "s" : ""}, click to toggle`}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              {localPhotoCount}
+            </button>
+          )}
+        </div>
         {task.description && (
           <p className="text-sm text-gray-500 truncate">{task.description}</p>
+        )}
+        {/* Assigned tags */}
+        {taskTags.length > 0 && (
+          <div className="mt-1 flex flex-wrap gap-1">
+            {taskTags.map((tag) => (
+              <TagChip key={tag.id} tag={tag} onRemove={() => handleRemoveTag(tag.id)} />
+            ))}
+          </div>
+        )}
+        {/* Inline tag picker toggle (view mode) */}
+        {allTags.length > 0 && (
+          <>
+            <button
+              type="button"
+              onClick={() => setShowTagPicker(!showTagPicker)}
+              className="mt-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-150"
+              aria-label="Toggle tag picker"
+            >
+              {showTagPicker ? "− Hide tags" : "+ Tag"}
+            </button>
+            {showTagPicker && (
+              <div className="mt-1 flex flex-wrap gap-1">
+                {allTags
+                  .filter((t) => !taskTags.some((tt) => tt.id === t.id))
+                  .map((tag) => (
+                    <TagChip
+                      key={tag.id}
+                      tag={tag}
+                      onClick={() => handleToggleTag(tag)}
+                    />
+                  ))}
+              </div>
+            )}
+          </>
+        )}
+        {/* Dependency toggle (when no deps yet) */}
+        {localDepIds.length === 0 && allTasksBasic.length > 1 && (
+          <button
+            type="button"
+            onClick={() => setShowDeps(!showDeps)}
+            className="mt-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-150"
+            aria-label="Toggle dependency picker"
+          >
+            {showDeps ? "− Hide deps" : "+ Dep"}
+          </button>
+        )}
+        {/* Dependency section */}
+        {showDeps && (
+          <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Dependencies</p>
+            {localDepIds.length > 0 && (
+              <ul className="space-y-1 mb-2">
+                {localDepIds.map((depId) => {
+                  const depTask = depTaskMap.get(depId);
+                  return (
+                    <li key={depId} className="flex items-center gap-2 text-sm">
+                      <span
+                        className={`inline-block w-2 h-2 rounded-full shrink-0 ${
+                          depTask?.state === "finished"
+                            ? "bg-green-500"
+                            : depTask?.state === "in_progress"
+                              ? "bg-blue-500"
+                              : "bg-gray-400"
+                        }`}
+                        aria-hidden="true"
+                      />
+                      <span className="truncate flex-1">
+                        {depTask?.title ?? depId}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveDependency(depId)}
+                        disabled={depLoading}
+                        className="shrink-0 text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50"
+                        aria-label={`Remove dependency on ${depTask?.title ?? depId}`}
+                      >
+                        ✕
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {availableForDep.length > 0 && (
+              <div className="flex gap-2">
+                <select
+                  id={`add-dep-${task.id}`}
+                  defaultValue=""
+                  className="flex-1 min-w-0 rounded border border-gray-300 px-2 py-1 text-sm dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
+                  aria-label="Select task to add as dependency"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val) {
+                      handleAddDependency(val);
+                      e.target.value = "";
+                    }
+                  }}
+                  disabled={depLoading}
+                >
+                  <option value="" disabled>Add dependency…</option>
+                  {availableForDep.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.title} ({t.state})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {availableForDep.length === 0 && localDepIds.length === 0 && (
+              <p className="text-xs text-gray-400">No other tasks available.</p>
+            )}
+          </div>
+        )}
+        {/* Photo section toggle (when no photos yet) */}
+        {localPhotoCount === 0 && (
+          <button
+            type="button"
+            onClick={togglePhotos}
+            className="mt-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-150"
+            aria-label="Toggle photos"
+          >
+            {showPhotos ? "− Hide photos" : "+ Photo"}
+          </button>
+        )}
+        {/* Photos section */}
+        {showPhotos && (
+          <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50">
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Photos</p>
+            {photosLoading ? (
+              <div className="flex items-center gap-2 py-2">
+                <svg className="h-4 w-4 animate-spin text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                <span className="text-xs text-gray-400">Loading photos…</span>
+              </div>
+            ) : (
+              <>
+                <PhotoGrid photos={photos} onDelete={handleDeletePhoto} />
+                <div className="mt-2">
+                  <PhotoUpload taskId={task.id} onUploadComplete={handleUploadComplete} />
+                </div>
+              </>
+            )}
+          </div>
         )}
       </div>
 
@@ -114,6 +446,14 @@ export const TaskItem = ({ task }: TaskItemProps) => {
           Delete
         </button>
       </div>
+
+      {showCompletionPrompt && (
+        <CompletionPhotoPrompt
+          taskId={task.id}
+          onComplete={completeFinish}
+          onSkip={completeFinish}
+        />
+      )}
     </div>
   );
 };

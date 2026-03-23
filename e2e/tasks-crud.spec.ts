@@ -8,36 +8,40 @@ test.describe("Task CRUD", () => {
 
   test("can add a task and see it in the list", async ({ page }) => {
     const taskTitle = `Test task ${Date.now()}`;
-    await page.getByPlaceholder("Add a new task...").fill(taskTitle);
-    await page.getByRole("button", { name: "Add Task" }).click();
+    await page.getByPlaceholder("What needs to be done?").fill(taskTitle);
+    await page.getByRole("button", { name: "Add" }).click();
 
     await expect(page.getByText(taskTitle)).toBeVisible();
   });
 
-  test("can toggle a task as completed", async ({ page }) => {
-    const taskTitle = `Toggle task ${Date.now()}`;
-    await page.getByPlaceholder("Add a new task...").fill(taskTitle);
-    await page.getByRole("button", { name: "Add Task" }).click();
+  test("can change task state to finished", async ({ page }) => {
+    const taskTitle = `Finish task ${Date.now()}`;
+    await page.getByPlaceholder("What needs to be done?").fill(taskTitle);
+    await page.getByRole("button", { name: "Add" }).click();
     await expect(page.getByText(taskTitle)).toBeVisible();
 
     const taskItem = page.locator("[data-testid='task-item']").filter({ hasText: taskTitle });
-    await taskItem.getByRole("checkbox").click();
+    await taskItem.getByLabel(`Change state of "${taskTitle}"`).selectOption("finished");
 
-    await expect(taskItem.getByRole("checkbox")).toBeChecked();
+    // Completion photo prompt modal appears — skip it
+    await page.getByRole("dialog").getByRole("button", { name: "Skip" }).click();
+
+    // Verify task is now finished (line-through style or select value)
+    await expect(taskItem.getByLabel(`Change state of "${taskTitle}"`)).toHaveValue("finished");
   });
 
   test("can edit a task title", async ({ page }) => {
     const originalTitle = `Edit task ${Date.now()}`;
     const updatedTitle = `Updated task ${Date.now()}`;
 
-    await page.getByPlaceholder("Add a new task...").fill(originalTitle);
-    await page.getByRole("button", { name: "Add Task" }).click();
+    await page.getByPlaceholder("What needs to be done?").fill(originalTitle);
+    await page.getByRole("button", { name: "Add" }).click();
     await expect(page.getByText(originalTitle)).toBeVisible();
 
     const taskItem = page.locator("[data-testid='task-item']").filter({ hasText: originalTitle });
     await taskItem.getByRole("button", { name: "Edit" }).click();
 
-    const input = taskItem.getByRole("textbox");
+    const input = taskItem.getByLabel("Edit task title");
     await input.clear();
     await input.fill(updatedTitle);
     await taskItem.getByRole("button", { name: "Save" }).click();
@@ -48,26 +52,33 @@ test.describe("Task CRUD", () => {
 
   test("can filter tasks by status", async ({ page }) => {
     const taskTitle = `Filter task ${Date.now()}`;
-    await page.getByPlaceholder("Add a new task...").fill(taskTitle);
-    await page.getByRole("button", { name: "Add Task" }).click();
-
-    const taskItem = page.locator("[data-testid='task-item']").filter({ hasText: taskTitle });
-    await taskItem.getByRole("checkbox").click();
-
-    await page.getByRole("link", { name: "Completed" }).click();
+    await page.getByPlaceholder("What needs to be done?").fill(taskTitle);
+    await page.getByRole("button", { name: "Add" }).click();
     await expect(page.getByText(taskTitle)).toBeVisible();
 
-    await page.getByRole("link", { name: "Active" }).click();
+    // Change task to finished via select + skip completion prompt
+    const taskItem = page.locator("[data-testid='task-item']").filter({ hasText: taskTitle });
+    await taskItem.getByLabel(`Change state of "${taskTitle}"`).selectOption("finished");
+    await page.getByRole("dialog").getByRole("button", { name: "Skip" }).click();
+    await expect(taskItem.getByLabel(`Change state of "${taskTitle}"`)).toHaveValue("finished");
+
+    // Filter by "Finished" tab — task should be visible
+    await page.getByRole("tab", { name: "Finished" }).click();
+    await expect(page.getByText(taskTitle)).toBeVisible();
+
+    // Filter by "Planned" tab — task should not be visible
+    await page.getByRole("tab", { name: "Planned" }).click();
     await expect(page.getByText(taskTitle)).not.toBeVisible();
 
-    await page.getByRole("link", { name: "All" }).click();
+    // Filter by "All" tab — task should be visible again
+    await page.getByRole("tab", { name: "All" }).click();
     await expect(page.getByText(taskTitle)).toBeVisible();
   });
 
   test("can delete a task", async ({ page }) => {
     const taskTitle = `Delete task ${Date.now()}`;
-    await page.getByPlaceholder("Add a new task...").fill(taskTitle);
-    await page.getByRole("button", { name: "Add Task" }).click();
+    await page.getByPlaceholder("What needs to be done?").fill(taskTitle);
+    await page.getByRole("button", { name: "Add" }).click();
     await expect(page.getByText(taskTitle)).toBeVisible();
 
     const taskItem = page.locator("[data-testid='task-item']").filter({ hasText: taskTitle });

@@ -22,7 +22,7 @@ const mockSupabase = {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  vi.mocked(createServerSupabaseClient).mockResolvedValue(mockSupabase as ReturnType<typeof createServerSupabaseClient> extends Promise<infer T> ? T : never);
+  vi.mocked(createServerSupabaseClient).mockResolvedValue(mockSupabase as unknown as Awaited<ReturnType<typeof createServerSupabaseClient>>);
   mockSupabase.auth.getUser.mockResolvedValue({
     data: { user: { id: "user-123" } },
   });
@@ -52,6 +52,7 @@ describe("createTask", () => {
     const { createTask } = await import("@/app/actions/tasks");
     const formData = new FormData();
     formData.set("title", "Test task");
+    formData.set("environment_id", "env-123");
     const result = await createTask(formData);
     expect(result.error).toBe("Not authenticated");
   });
@@ -64,29 +65,38 @@ describe("createTask", () => {
     const formData = new FormData();
     formData.set("title", "Buy groceries");
     formData.set("description", "Milk, eggs, bread");
+    formData.set("environment_id", "env-456");
 
     const result = await createTask(formData);
     expect(result.error).toBeNull();
     expect(mockSupabase.from).toHaveBeenCalledWith("tasks");
     expect(insertMock).toHaveBeenCalledWith({
       user_id: "user-123",
+      environment_id: "env-456",
       title: "Buy groceries",
       description: "Milk, eggs, bread",
+      category_id: null,
     });
   });
 });
 
-describe("toggleTask", () => {
-  it("flips completed status", async () => {
+describe("changeTaskState", () => {
+  it("updates task state", async () => {
     const eqMock = vi.fn().mockResolvedValue({ error: null });
     const updateMock = vi.fn().mockReturnValue({ eq: eqMock });
     mockSupabase.from.mockReturnValue({ update: updateMock });
 
-    const { toggleTask } = await import("@/app/actions/tasks");
-    const result = await toggleTask("task-1", false);
+    const { changeTaskState } = await import("@/app/actions/tasks");
+    const result = await changeTaskState("task-1", "in_progress");
     expect(result.error).toBeNull();
-    expect(updateMock).toHaveBeenCalledWith({ completed: true });
+    expect(updateMock).toHaveBeenCalledWith({ state: "in_progress" });
     expect(eqMock).toHaveBeenCalledWith("id", "task-1");
+  });
+
+  it("rejects invalid state", async () => {
+    const { changeTaskState } = await import("@/app/actions/tasks");
+    const result = await changeTaskState("task-1", "dependent");
+    expect(result.error).toBe("Invalid state. Cannot manually set dependent state.");
   });
 });
 

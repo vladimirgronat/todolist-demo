@@ -11,12 +11,15 @@ vi.mock("next/navigation", () => ({
 }));
 
 describe("TaskFilterTabs", () => {
-  it("renders all three filter tabs", () => {
+  it("renders all filter tabs", () => {
     render(<TaskFilterTabs />);
     expect(screen.getByRole("tab", { name: "All" })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Active" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Planned" })).toBeInTheDocument();
     expect(
-      screen.getByRole("tab", { name: "Completed" })
+      screen.getByRole("tab", { name: "In Progress" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("tab", { name: "Finished" })
     ).toBeInTheDocument();
   });
 
@@ -32,11 +35,11 @@ describe("TaskFilterTabs", () => {
     const user = userEvent.setup();
     render(<TaskFilterTabs />);
 
-    await user.click(screen.getByRole("tab", { name: "Active" }));
-    expect(mockPush).toHaveBeenCalledWith("/?filter=active");
+    await user.click(screen.getByRole("tab", { name: "Planned" }));
+    expect(mockPush).toHaveBeenCalledWith("/?filter=planned");
 
-    await user.click(screen.getByRole("tab", { name: "Completed" }));
-    expect(mockPush).toHaveBeenCalledWith("/?filter=completed");
+    await user.click(screen.getByRole("tab", { name: "Finished" }));
+    expect(mockPush).toHaveBeenCalledWith("/?filter=finished");
   });
 
   it("removes filter param when 'All' is clicked", async () => {

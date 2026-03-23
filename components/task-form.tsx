@@ -2,8 +2,14 @@
 
 import { useState } from "react";
 import { createTask } from "@/app/actions/tasks";
+import type { Category } from "@/types/category";
 
-export const TaskForm = () => {
+interface TaskFormProps {
+  environmentId: string;
+  categories?: Category[];
+}
+
+export const TaskForm = ({ environmentId, categories }: TaskFormProps) => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -55,13 +61,32 @@ export const TaskForm = () => {
         </button>
       </div>
 
-      <input
-        name="description"
-        type="text"
-        placeholder="Description (optional)"
-        className="rounded border px-3 py-2"
-        aria-label="Task description"
-      />
+      <input type="hidden" name="environment_id" value={environmentId} />
+
+      <div className="flex gap-2">
+        {categories && categories.length > 0 && (
+          <select
+            name="category_id"
+            className="rounded border px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+            aria-label="Task category"
+            defaultValue=""
+          >
+            <option value="">No category</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+        )}
+        <input
+          name="description"
+          type="text"
+          placeholder="Description (optional)"
+          className="flex-1 rounded border px-3 py-2"
+          aria-label="Task description"
+        />
+      </div>
     </form>
   );
 };

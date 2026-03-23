@@ -4,12 +4,12 @@ import userEvent from "@testing-library/user-event";
 import { TaskItem } from "@/components/task-item";
 import type { Task } from "@/types/task";
 
-const mockToggleTask = vi.fn();
+const mockChangeTaskState = vi.fn();
 const mockDeleteTask = vi.fn();
 const mockUpdateTask = vi.fn();
 
 vi.mock("@/app/actions/tasks", () => ({
-  toggleTask: (...args: unknown[]) => mockToggleTask(...args),
+  changeTaskState: (...args: unknown[]) => mockChangeTaskState(...args),
   deleteTask: (...args: unknown[]) => mockDeleteTask(...args),
   updateTask: (...args: unknown[]) => mockUpdateTask(...args),
 }));
@@ -17,16 +17,18 @@ vi.mock("@/app/actions/tasks", () => ({
 const mockTask: Task = {
   id: "task-1",
   user_id: "user-1",
+  environment_id: "env-1",
   title: "Test task",
   description: "Test description",
-  completed: false,
+  state: "planned",
+  category_id: null,
   created_at: "2026-01-01T00:00:00Z",
   updated_at: "2026-01-01T00:00:00Z",
 };
 
 beforeEach(() => {
   vi.clearAllMocks();
-  mockToggleTask.mockResolvedValue({ error: null });
+  mockChangeTaskState.mockResolvedValue({ error: null });
   mockDeleteTask.mockResolvedValue({ error: null });
   mockUpdateTask.mockResolvedValue({ error: null });
 });
@@ -38,20 +40,21 @@ describe("TaskItem", () => {
     expect(screen.getByText("Test description")).toBeInTheDocument();
   });
 
-  it("shows strikethrough for completed tasks", () => {
-    render(<TaskItem task={{ ...mockTask, completed: true }} />);
+  it("shows strikethrough for finished tasks", () => {
+    render(<TaskItem task={{ ...mockTask, state: "finished" }} />);
     const title = screen.getByText("Test task");
     expect(title).toHaveClass("line-through");
   });
 
-  it("calls toggleTask when checkbox is clicked", async () => {
+  it("calls changeTaskState when state is changed", async () => {
     const user = userEvent.setup();
     render(<TaskItem task={mockTask} />);
 
-    await user.click(
-      screen.getByLabelText('Mark "Test task" as completed')
+    await user.selectOptions(
+      screen.getByLabelText('Change state of "Test task"'),
+      "in_progress"
     );
-    expect(mockToggleTask).toHaveBeenCalledWith("task-1", false);
+    expect(mockChangeTaskState).toHaveBeenCalledWith("task-1", "in_progress");
   });
 
   it("calls deleteTask when delete button is clicked", async () => {
