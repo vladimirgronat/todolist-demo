@@ -56,5 +56,9 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>TodoList needs camera access to take photos for your tasks.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>TodoList needs photo library access to attach photos to your tasks.</string>
 </dict>
 </plist>

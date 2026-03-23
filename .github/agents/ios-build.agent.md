@@ -26,6 +26,7 @@ This project uses **Capacitor 8.x** to wrap a live Vercel-hosted web app in a na
 
 - `Capacitor` + `Cordova` (from `capacitor-swift-pm` 8.2.0)
 - `CapacitorApp` (`@capacitor/app`) — app lifecycle + deep link listeners
+- `CapacitorCamera` (`@capacitor/camera`) — native camera and photo gallery access
 
 ## Two Capacitor Modes
 

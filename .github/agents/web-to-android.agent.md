@@ -30,6 +30,7 @@ This project already has Capacitor configured:
 - `@capacitor/core` — core runtime
 - `@capacitor/app` — app lifecycle + deep link listeners
 - `@capacitor/browser` — system browser for OAuth (opens external browser, not WebView)
+- `@capacitor/camera` — native camera and photo gallery access
 
 ## Two Capacitor Modes
 
