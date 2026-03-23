@@ -1,0 +1,25 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Android: Build & Run (Debug USB)",
+      "type": "shell",
+      "command": "pwsh",
+      "args": [
+        "-Command",
+        "$env:JAVA_HOME = 'C:\\Program Files\\Eclipse Adoptium\\jdk-21.0.10.7-hotspot'; $env:ANDROID_SDK_ROOT = 'C:\\Users\\vladi\\.bubblewrap\\android_sdk'; $env:ANDROID_HOME = 'C:\\Users\\vladi\\.bubblewrap\\android_sdk'; $adb = \"$env:ANDROID_SDK_ROOT\\platform-tools\\adb.exe\"; $usbDevice = (& $adb devices | Select-String '\\sdevice$' | ForEach-Object { ($_ -split '\\s+')[0] } | Where-Object { $_ -notlike 'emulator-*' } | Select-Object -First 1); if (-not $usbDevice) { Write-Host 'No USB device found. Connect phone with USB debugging enabled.' -ForegroundColor Red; exit 1 }; cd '${workspaceFolder}'; npx cap sync android 2>&1 | Write-Host; cd android; Write-Host 'Building debug APK...' -ForegroundColor Cyan; .\\gradlew.bat assembleDebug 2>&1 | Write-Host; if ($LASTEXITCODE -ne 0) { Write-Host 'Build failed!' -ForegroundColor Red; exit 1 }; Write-Host \"Installing to USB device $usbDevice...\" -ForegroundColor Cyan; & $adb -s $usbDevice install -r app\\build\\outputs\\apk\\debug\\app-debug.apk 2>&1 | Write-Host; if ($LASTEXITCODE -ne 0) { Write-Host 'Install blocked on device. Approve install prompt or allow USB installs in Developer options.' -ForegroundColor Yellow; exit 1 }; Write-Host 'Launching app...' -ForegroundColor Green; & $adb -s $usbDevice shell am start -n com.vladimirgronat.todolist/.MainActivity"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      },
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}
