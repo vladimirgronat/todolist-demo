@@ -14,6 +14,7 @@ try {
 // On Vercel: use short SHA (unique per commit, always available)
 // Locally: use git commit count
 let buildId = "0";
+let commitDate = "";
 if (process.env.VERCEL_GIT_COMMIT_SHA) {
   buildId = process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7);
 } else {
@@ -26,10 +27,19 @@ if (process.env.VERCEL_GIT_COMMIT_SHA) {
     // git not available
   }
 }
+try {
+  commitDate = execSync("git log -1 --format=%cI", {
+    encoding: "utf8",
+    stdio: ["ignore", "pipe", "ignore"],
+  }).trim();
+} catch {
+  // git not available
+}
 
 const nextConfig: NextConfig = {
   env: {
     NEXT_PUBLIC_APP_VERSION: `${majorMinor}.${buildId}`,
+    NEXT_PUBLIC_COMMIT_DATE: commitDate,
   },
 };
 
