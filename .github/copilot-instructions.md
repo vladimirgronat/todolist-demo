@@ -72,6 +72,7 @@ Specialized agents are in `.github/agents/`. Use them for domain-specific work:
 | **android-build** | Bubblewrap TWA, APK signing, emulator, `android-twa/` project |
 | **ios-build** | Capacitor iOS, Xcode, SPM, iOS simulator, Info.plist |
 | **devops** | GitHub Actions CI/CD, Vercel config, build/test pipelines |
+| **reviewer** | Architecture review, Next.js patterns, Supabase usage, security audit, code quality |
 
 For multi-step or cross-cutting work, start with the **planner** agent.
 
