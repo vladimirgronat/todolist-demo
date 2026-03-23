@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "prebuild": "tsx scripts/migrate.ts || echo 'Migration skipped (no SUPABASE_ACCESS_TOKEN)'",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -44,6 +46,7 @@
     "eslint-config-next": "16.1.7",
     "jsdom": "^29.0.0",
     "tailwindcss": "^4",
+    "tsx": "^4.21.0",
     "typescript": "^5",
     "vitest": "^4.1.0"
   }
