@@ -1,13 +1,11 @@
-import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { createServerSupabaseClient, getAuthenticatedUser } from "@/lib/supabase-server";
 import type { EnvironmentMember } from "@/types/environment";
 
 export const getEnvironmentMembers = async (
   environmentId: string
 ): Promise<EnvironmentMember[]> => {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
 
   if (!user) {
     return [];
@@ -33,9 +31,7 @@ interface PendingInvitation {
 
 export const getPendingInvitations = async (): Promise<PendingInvitation[]> => {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
 
   if (!user) {
     return [];
@@ -80,9 +76,7 @@ export const getEnvironmentOwner = async (
   environmentId: string
 ): Promise<EnvironmentOwnerInfo | null> => {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
 
   if (!user) {
     return null;

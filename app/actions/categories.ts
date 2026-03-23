@@ -5,6 +5,8 @@ import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 type SupabaseClient = Awaited<ReturnType<typeof createServerSupabaseClient>>;
 
+const MAX_CATEGORY_DEPTH = 50;
+
 const fetchParentId = async (supabase: SupabaseClient, categoryId: string): Promise<string | null> => {
   const { data } = await supabase
     .from("categories")
@@ -85,7 +87,9 @@ export const moveCategory = async (id: string, formData: FormData) => {
   if (newParentId) {
     const visited = new Set<string>();
     let checkId: string | null = newParentId;
+    let depth = 0;
     while (checkId) {
+      if (depth++ >= MAX_CATEGORY_DEPTH) break;
       if (checkId === id)
         return { error: "Cannot move a category under itself or its descendants" };
       if (visited.has(checkId)) break;

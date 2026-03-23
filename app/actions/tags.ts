@@ -93,14 +93,13 @@ export const reorderTags = async (formData: FormData) => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated" };
 
-  for (const item of order) {
-    const { error } = await supabase
-      .from("tags")
-      .update({ sort_order: item.sort_order })
-      .eq("id", item.id);
-
-    if (error) return { error: error.message };
-  }
+  const results = await Promise.all(
+    order.map((item) =>
+      supabase.from("tags").update({ sort_order: item.sort_order }).eq("id", item.id)
+    )
+  );
+  const failed = results.find((r) => r.error);
+  if (failed) return { error: failed.error!.message };
 
   revalidatePath("/");
   return { error: null };

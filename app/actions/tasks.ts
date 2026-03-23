@@ -17,6 +17,10 @@ export const createTask = async (formData: FormData) => {
     return { error: "Title must be 200 characters or less" };
   }
 
+  if (description && description.length > 2000) {
+    return { error: "Description must be 2000 characters or less" };
+  }
+
   if (!environmentId) {
     return { error: "Environment is required" };
   }
@@ -57,6 +61,10 @@ export const updateTask = async (id: string, formData: FormData) => {
 
   if (title.length > 200) {
     return { error: "Title must be 200 characters or less" };
+  }
+
+  if (description && description.length > 2000) {
+    return { error: "Description must be 2000 characters or less" };
   }
 
   const supabase = await createServerSupabaseClient();
@@ -133,38 +141,40 @@ export const changeTaskState = async (id: string, newState: string) => {
       .select("task_id")
       .eq("depends_on_task_id", id);
 
-    if (dependents) {
-      for (const dep of dependents) {
-        const { data: allDepsOfDependent } = await supabase
-          .from("task_dependencies")
-          .select("depends_on_task_id")
-          .eq("task_id", dep.task_id);
+    if (dependents && dependents.length > 0) {
+      await Promise.all(
+        dependents.map(async (dep) => {
+          const { data: allDepsOfDependent } = await supabase
+            .from("task_dependencies")
+            .select("depends_on_task_id")
+            .eq("task_id", dep.task_id);
 
-        if (allDepsOfDependent) {
-          const depIds = allDepsOfDependent.map((d) => d.depends_on_task_id);
-          const { data: depTasks } = await supabase
-            .from("tasks")
-            .select("id, state")
-            .in("id", depIds);
-
-          const allDone =
-            depTasks?.every((t) => t.state === "finished") ?? false;
-          if (allDone) {
-            const { data: depTask } = await supabase
+          if (allDepsOfDependent) {
+            const depIds = allDepsOfDependent.map((d) => d.depends_on_task_id);
+            const { data: depTasks } = await supabase
               .from("tasks")
-              .select("state")
-              .eq("id", dep.task_id)
-              .single();
+              .select("id, state")
+              .in("id", depIds);
 
-            if (depTask && depTask.state === "dependent") {
-              await supabase
+            const allDone =
+              depTasks?.every((t) => t.state === "finished") ?? false;
+            if (allDone) {
+              const { data: depTask } = await supabase
                 .from("tasks")
-                .update({ state: "planned" })
-                .eq("id", dep.task_id);
+                .select("state")
+                .eq("id", dep.task_id)
+                .single();
+
+              if (depTask && depTask.state === "dependent") {
+                await supabase
+                  .from("tasks")
+                  .update({ state: "planned" })
+                  .eq("id", dep.task_id);
+              }
             }
           }
-        }
-      }
+        })
+      );
     }
   }
 

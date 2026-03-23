@@ -83,6 +83,7 @@ export const TaskForm = ({ environmentId, categories }: TaskFormProps) => {
           name="description"
           type="text"
           placeholder="Description (optional)"
+          maxLength={2000}
           className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-colors placeholder:text-gray-400 hover:border-gray-300 focus:border-blue-500 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:hover:border-gray-600 dark:focus:border-blue-500 dark:focus:bg-gray-900"
           aria-label="Task description"
         />

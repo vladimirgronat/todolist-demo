@@ -1,11 +1,9 @@
-import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { createServerSupabaseClient, getAuthenticatedUser } from "@/lib/supabase-server";
 import type { Environment } from "@/types/environment";
 
 export const ensurePersonalEnvironment = async (): Promise<void> => {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
 
   if (!user) {
     return;
@@ -38,9 +36,7 @@ export const ensurePersonalEnvironment = async (): Promise<void> => {
 
 export const getEnvironments = async (): Promise<Environment[]> => {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
 
   if (!user) {
     return [];
@@ -75,9 +71,7 @@ export const getActiveEnvironmentId = async (
   cookieValue?: string
 ): Promise<string | null> => {
   const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
 
   if (!user) {
     return null;

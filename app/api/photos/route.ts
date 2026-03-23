@@ -3,6 +3,11 @@ import { createServerSupabaseClient } from "@/lib/supabase-server";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MIME_TO_EXT: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
 
 export async function GET(request: NextRequest) {
   const taskId = request.nextUrl.searchParams.get("task_id");
@@ -92,7 +97,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Upload to Supabase Storage
-  const fileExt = file.name.split(".").pop() || "jpg";
+  const fileExt = MIME_TO_EXT[file.type] || "jpg";
   const storagePath = `${task.environment_id}/${taskId}/${crypto.randomUUID()}.${fileExt}`;
 
   const { error: uploadError } = await supabase.storage

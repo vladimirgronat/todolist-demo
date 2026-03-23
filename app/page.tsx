@@ -12,8 +12,18 @@ import { getEnvironments, getActiveEnvironmentId, ensurePersonalEnvironment } fr
 import { getCategories, buildCategoryTree } from "@/lib/categories";
 import { getTags } from "@/lib/tags";
 import { getPendingInvitations } from "@/lib/teams";
-import { createServerSupabaseClient } from "@/lib/supabase-server";
+import { getAuthenticatedUser } from "@/lib/supabase-server";
+import { signOut } from "@/app/actions/auth";
 import type { TaskFilter } from "@/types/task";
+
+const VALID_FILTERS: TaskFilter[] = ["all", "planned", "in_progress", "dependent", "finished"];
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const isValidFilter = (v: string | undefined): v is TaskFilter =>
+  !!v && VALID_FILTERS.includes(v as TaskFilter);
+
+const isValidUUID = (v: string | undefined): v is string =>
+  !!v && UUID_RE.test(v);
 
 interface HomeProps {
   searchParams: Promise<{ filter?: string; env?: string; category?: string; tag?: string }>;
@@ -21,17 +31,16 @@ interface HomeProps {
 
 export default async function Home({ searchParams }: HomeProps) {
   const params = await searchParams;
-  const filter = (params.filter as TaskFilter) || "all";
-  const categoryId = params.category || null;
-  const tagId = params.tag || null;
+  const filter: TaskFilter = isValidFilter(params.filter) ? params.filter : "all";
+  const categoryId = (params.category === "uncategorized" || isValidUUID(params.category)) ? params.category : null;
+  const tagId = isValidUUID(params.tag) ? params.tag : null;
 
   await ensurePersonalEnvironment();
 
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getAuthenticatedUser();
 
   const environments = await getEnvironments();
-  const activeEnvironmentId = await getActiveEnvironmentId(params.env);
+  const activeEnvironmentId = await getActiveEnvironmentId(isValidUUID(params.env) ? params.env : undefined);
 
   if (!activeEnvironmentId || environments.length === 0) {
     return (
@@ -81,18 +90,7 @@ export default async function Home({ searchParams }: HomeProps) {
             >
               Environments
             </Link>
-            <form
-              action={async () => {
-                "use server";
-                const { createServerSupabaseClient } = await import(
-                  "@/lib/supabase-server"
-                );
-                const supabase = await createServerSupabaseClient();
-                await supabase.auth.signOut();
-                const { redirect } = await import("next/navigation");
-                redirect("/login");
-              }}
-            >
+            <form action={signOut}>
               <button
                 type="submit"
                 className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"

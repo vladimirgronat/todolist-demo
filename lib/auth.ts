@@ -25,6 +25,13 @@ export const signOut = async () => {
   if (error) throw error;
 };
 
+/**
+ * Client-side convenience for checking if a session token exists.
+ * Uses getSession() which reads from the local cookie WITHOUT server-side
+ * JWT verification. Safe for UI-conditional rendering on the client,
+ * but NEVER use this for authorization decisions — use
+ * supabase.auth.getUser() on the server instead.
+ */
 export const getSession = async () => {
   const supabase = createClient();
   const {
