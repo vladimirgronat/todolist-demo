@@ -72,55 +72,73 @@ export const TagManager = ({ tags, environmentId }: TagManagerProps) => {
   };
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Tags</h2>
+    <div className="space-y-3">
+      <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Tags</h2>
 
       {error && (
-        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600 dark:border-red-800 dark:bg-red-950 dark:text-red-400">
+        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 p-2 text-xs text-red-600 dark:border-red-800 dark:bg-red-950 dark:text-red-400">
           {error}
         </div>
       )}
 
       {/* Create form */}
-      <form onSubmit={handleCreate} className="flex items-center gap-2">
-        <label htmlFor="new-tag-name" className="sr-only">New tag name</label>
-        <input
-          id="new-tag-name"
-          name="name"
-          type="text"
-          required
-          maxLength={50}
-          placeholder="New tag…"
-          className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100 placeholder:text-gray-400"
-        />
-        <label htmlFor="new-tag-color" className="sr-only">Tag color</label>
-        <input
-          id="new-tag-color"
-          name="color"
-          type="color"
-          defaultValue="#3b82f6"
-          className="h-9 w-9 shrink-0 cursor-pointer rounded-lg border border-gray-300 p-0.5 dark:border-gray-700"
-        />
-        <button
-          type="submit"
-          disabled={loading}
-          className="shrink-0 rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-150 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          Add
-        </button>
+      <form onSubmit={handleCreate} className="space-y-2">
+        <div className="flex items-center gap-1.5">
+          <label htmlFor="new-tag-color" className="sr-only">Tag color</label>
+          <input
+            id="new-tag-color"
+            name="color"
+            type="color"
+            defaultValue="#3b82f6"
+            className="h-8 w-8 shrink-0 cursor-pointer rounded-lg border border-gray-200 p-0.5 dark:border-gray-700"
+          />
+          <label htmlFor="new-tag-name" className="sr-only">New tag name</label>
+          <input
+            id="new-tag-name"
+            name="name"
+            type="text"
+            required
+            maxLength={50}
+            placeholder="New tag…"
+            className="min-w-0 flex-1 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-sm transition-colors placeholder:text-gray-400 hover:border-gray-300 focus:border-blue-500 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:hover:border-gray-600"
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="shrink-0 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+          >
+            Add
+          </button>
+        </div>
+        {/* Preset colors for quick selection */}
+        <div className="flex items-center gap-1">
+          {PRESET_COLORS.map((c) => (
+            <button
+              key={c}
+              type="button"
+              onClick={() => {
+                const colorInput = document.getElementById("new-tag-color") as HTMLInputElement;
+                if (colorInput) colorInput.value = c;
+              }}
+              className="h-5 w-5 rounded-full border border-gray-200 transition-transform hover:scale-125 dark:border-gray-700"
+              style={{ backgroundColor: c }}
+              aria-label={`Select color ${c}`}
+            />
+          ))}
+        </div>
       </form>
 
       {/* Tag list */}
       {tags.length === 0 ? (
-        <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+        <p className="py-4 text-center text-xs text-gray-400 dark:text-gray-500">
           No tags yet — create one above.
         </p>
       ) : (
-        <ul className="space-y-2">
+        <ul className="space-y-1">
           {tags.map((tag) => (
             <li
               key={tag.id}
-              className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900"
+              className="group flex items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50"
             >
               {/* Color swatch */}
               <div className="relative shrink-0">
@@ -130,7 +148,7 @@ export const TagManager = ({ tags, environmentId }: TagManagerProps) => {
                   type="color"
                   value={tag.color ?? "#6b7280"}
                   onChange={(e) => handleColorChange(tag.id, e.target.value)}
-                  className="h-7 w-7 cursor-pointer rounded-full border border-gray-300 p-0.5 dark:border-gray-700"
+                  className="h-5 w-5 cursor-pointer rounded-full border border-gray-200 p-0 dark:border-gray-700"
                 />
               </div>
 
@@ -138,7 +156,7 @@ export const TagManager = ({ tags, environmentId }: TagManagerProps) => {
               {editingId === tag.id ? (
                 <form
                   onSubmit={(e) => handleRename(tag.id, e)}
-                  className="flex flex-1 items-center gap-2"
+                  className="flex flex-1 items-center gap-1"
                 >
                   <label htmlFor={`rename-${tag.id}`} className="sr-only">Rename tag</label>
                   <input
@@ -149,64 +167,54 @@ export const TagManager = ({ tags, environmentId }: TagManagerProps) => {
                     maxLength={50}
                     defaultValue={tag.name}
                     autoFocus
-                    className="flex-1 rounded-lg border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+                    className="min-w-0 flex-1 rounded border border-gray-200 bg-white px-2 py-0.5 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
                   />
                   <button
                     type="submit"
                     disabled={loading}
-                    className="rounded px-2 py-1 text-sm text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950 transition-colors duration-150"
+                    className="rounded px-1.5 py-0.5 text-xs text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
                   >
                     Save
                   </button>
                   <button
                     type="button"
                     onClick={() => setEditingId(null)}
-                    className="rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors duration-150"
+                    className="rounded px-1.5 py-0.5 text-xs text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
                   >
-                    Cancel
+                    ✕
                   </button>
                 </form>
               ) : (
-                <span className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                <span className="flex-1 text-sm text-gray-800 dark:text-gray-200 truncate">
                   {tag.name}
                 </span>
               )}
 
-              {/* Preset color chips */}
-              <div className="hidden sm:flex items-center gap-1">
-                {PRESET_COLORS.map((c) => (
-                  <button
-                    key={c}
-                    type="button"
-                    onClick={() => handleColorChange(tag.id, c)}
-                    className={`h-4 w-4 rounded-full border transition-transform duration-150 hover:scale-125 ${
-                      tag.color === c ? "border-gray-900 dark:border-white ring-1 ring-offset-1 ring-gray-400" : "border-gray-300 dark:border-gray-600"
-                    }`}
-                    style={{ backgroundColor: c }}
-                    aria-label={`Set color ${c} for "${tag.name}"`}
-                  />
-                ))}
-              </div>
-
-              {/* Actions */}
+              {/* Actions — visible on hover */}
               {editingId !== tag.id && (
-                <div className="flex shrink-0 gap-1">
+                <div className="flex shrink-0 gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
                   <button
                     type="button"
                     onClick={() => setEditingId(tag.id)}
-                    className="rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 transition-colors duration-150"
+                    className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
                     aria-label={`Rename "${tag.name}"`}
+                    title="Rename"
                   >
-                    Rename
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDelete(tag.id)}
                     disabled={loading}
-                    className="rounded px-2 py-1 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950 disabled:opacity-50 transition-colors duration-150"
+                    className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950 dark:hover:text-red-400 disabled:opacity-50"
                     aria-label={`Delete "${tag.name}"`}
+                    title="Delete"
                   >
-                    Delete
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
                   </button>
                 </div>
               )}

@@ -8,9 +8,10 @@ import type { Environment } from "@/types/environment";
 
 interface EnvironmentListProps {
   environments: Environment[];
+  activeEnvironmentId?: string;
 }
 
-export const EnvironmentList = ({ environments }: EnvironmentListProps) => {
+export const EnvironmentList = ({ environments, activeEnvironmentId }: EnvironmentListProps) => {
   if (environments.length === 0) {
     return (
       <p className="text-center text-gray-400 py-8 dark:text-gray-500">
@@ -22,7 +23,12 @@ export const EnvironmentList = ({ environments }: EnvironmentListProps) => {
   return (
     <div className="flex flex-col gap-2">
       {environments.map((env) => (
-        <EnvironmentItem key={env.id} environment={env} canDelete={environments.length > 1} />
+        <EnvironmentItem
+          key={env.id}
+          environment={env}
+          canDelete={environments.length > 1}
+          isActive={env.id === activeEnvironmentId}
+        />
       ))}
     </div>
   );
@@ -31,9 +37,10 @@ export const EnvironmentList = ({ environments }: EnvironmentListProps) => {
 interface EnvironmentItemProps {
   environment: Environment;
   canDelete: boolean;
+  isActive: boolean;
 }
 
-const EnvironmentItem = ({ environment, canDelete }: EnvironmentItemProps) => {
+const EnvironmentItem = ({ environment, canDelete, isActive }: EnvironmentItemProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -121,7 +128,11 @@ const EnvironmentItem = ({ environment, canDelete }: EnvironmentItemProps) => {
   }
 
   return (
-    <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-3 dark:border-gray-700">
+    <div className={`flex items-center gap-3 rounded-xl border p-3 transition-colors ${
+      isActive
+        ? "border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20"
+        : "border-gray-200 dark:border-gray-700"
+    }`}>
       {error && (
         <div role="alert" className="text-sm text-red-600 dark:text-red-400">
           {error}
@@ -129,8 +140,19 @@ const EnvironmentItem = ({ environment, canDelete }: EnvironmentItemProps) => {
       )}
       <span className="flex-1 text-sm font-medium text-gray-900 dark:text-gray-100">
         {environment.name}
+        {isActive && (
+          <span className="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+            Active
+          </span>
+        )}
       </span>
       <div className="flex gap-1 shrink-0">
+        <Link
+          href={`/?env=${environment.id}`}
+          className="rounded-lg px-2 py-1 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950"
+        >
+          Open
+        </Link>
         <Link
           href={`/environments/${environment.id}/team`}
           className="rounded-lg px-2 py-1 text-sm text-gray-600 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
