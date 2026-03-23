@@ -27,17 +27,17 @@ export const TaskFilterTabs = () => {
   };
 
   return (
-    <div className="flex gap-1" role="tablist" aria-label="Task filter">
+    <div className="flex gap-1 rounded-xl bg-gray-100 p-1 dark:bg-gray-800" role="tablist" aria-label="Task filter">
       {filters.map(({ label, value }) => (
         <button
           key={value}
           role="tab"
           aria-selected={current === value}
           onClick={() => handleFilter(value)}
-          className={`rounded px-3 py-1 text-sm font-medium ${
+          className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${
             current === value
-              ? "bg-blue-600 text-white"
-              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              ? "bg-white text-blue-600 shadow-sm dark:bg-gray-700 dark:text-blue-400"
+              : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
           }`}
         >
           {label}

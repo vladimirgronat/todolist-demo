@@ -36,7 +36,7 @@ export const TaskForm = ({ environmentId, categories }: TaskFormProps) => {
       {error && (
         <div
           role="alert"
-          className="rounded bg-red-100 px-4 py-2 text-sm text-red-700"
+          className="rounded-lg bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-700 dark:bg-red-950/30 dark:border-red-900 dark:text-red-400"
         >
           {error}
         </div>
@@ -49,13 +49,13 @@ export const TaskForm = ({ environmentId, categories }: TaskFormProps) => {
           required
           maxLength={200}
           placeholder="What needs to be done?"
-          className="flex-1 rounded border px-3 py-2"
+          className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm transition-colors placeholder:text-gray-400 hover:border-gray-300 focus:border-blue-500 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:hover:border-gray-600 dark:focus:border-blue-500 dark:focus:bg-gray-900"
           aria-label="Task title"
         />
         <button
           type="submit"
           disabled={loading}
-          className="rounded bg-blue-600 px-4 py-2 text-white font-medium hover:bg-blue-700 disabled:opacity-50"
+          className="rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow active:bg-blue-800 disabled:opacity-50 disabled:shadow-none"
         >
           {loading ? "Adding…" : "Add"}
         </button>
@@ -67,7 +67,7 @@ export const TaskForm = ({ environmentId, categories }: TaskFormProps) => {
         {categories && categories.length > 0 && (
           <select
             name="category_id"
-            className="rounded border px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-900 dark:text-gray-100"
+            className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-colors hover:border-gray-300 focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-gray-600"
             aria-label="Task category"
             defaultValue=""
           >
@@ -83,7 +83,7 @@ export const TaskForm = ({ environmentId, categories }: TaskFormProps) => {
           name="description"
           type="text"
           placeholder="Description (optional)"
-          className="flex-1 rounded border px-3 py-2"
+          className="flex-1 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-colors placeholder:text-gray-400 hover:border-gray-300 focus:border-blue-500 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:hover:border-gray-600 dark:focus:border-blue-500 dark:focus:bg-gray-900"
           aria-label="Task description"
         />
       </div>

@@ -162,7 +162,7 @@ export const TaskItem = ({ task, categoryName, tags = [], allTags = [], dependen
     return (
       <form
         onSubmit={handleUpdate}
-        className="flex flex-col gap-2 rounded border p-3"
+        className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900"
         data-testid="task-item"
       >
         <input
@@ -171,14 +171,14 @@ export const TaskItem = ({ task, categoryName, tags = [], allTags = [], dependen
           required
           maxLength={200}
           defaultValue={task.title}
-          className="rounded border px-3 py-2"
+          className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-colors hover:border-gray-300 focus:border-blue-500 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-gray-600 dark:focus:bg-gray-900"
           aria-label="Edit task title"
         />
         <input
           name="description"
           type="text"
           defaultValue={task.description ?? ""}
-          className="rounded border px-3 py-2"
+          className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm transition-colors hover:border-gray-300 focus:border-blue-500 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-gray-600 dark:focus:bg-gray-900"
           aria-label="Edit task description"
         />
 
@@ -206,14 +206,14 @@ export const TaskItem = ({ task, categoryName, tags = [], allTags = [], dependen
           <button
             type="submit"
             disabled={loading}
-            className="rounded bg-blue-600 px-3 py-1 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded-lg bg-blue-600 px-4 py-1.5 text-sm font-medium text-white shadow-sm transition-all hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50"
           >
             Save
           </button>
           <button
             type="button"
             onClick={() => setIsEditing(false)}
-            className="rounded border px-3 py-1 text-sm hover:bg-gray-100"
+            className="rounded-lg border border-gray-200 bg-gray-50 px-4 py-1.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             Cancel
           </button>
@@ -223,12 +223,12 @@ export const TaskItem = ({ task, categoryName, tags = [], allTags = [], dependen
   }
 
   return (
-    <div className="flex items-center gap-3 rounded border p-3" data-testid="task-item">
+    <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md dark:border-gray-800 dark:bg-gray-900 dark:hover:shadow-gray-950/50" data-testid="task-item">
       <select
         value={task.state}
         onChange={(e) => handleStateChange(e.target.value as TaskState)}
         disabled={loading}
-        className="shrink-0 rounded border px-2 py-1 text-sm"
+        className="shrink-0 rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-sm transition-colors hover:border-gray-300 focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-gray-600"
         aria-label={`Change state of "${task.title}"`}
       >
         <option value="planned">Planned</option>
@@ -394,17 +394,6 @@ export const TaskItem = ({ task, categoryName, tags = [], allTags = [], dependen
             )}
           </div>
         )}
-        {/* Photo section toggle (when no photos yet) */}
-        {localPhotoCount === 0 && (
-          <button
-            type="button"
-            onClick={togglePhotos}
-            className="mt-1 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-150"
-            aria-label="Toggle photos"
-          >
-            {showPhotos ? "− Hide photos" : "+ Photo"}
-          </button>
-        )}
         {/* Photos section */}
         {showPhotos && (
           <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/50">
@@ -431,8 +420,18 @@ export const TaskItem = ({ task, categoryName, tags = [], allTags = [], dependen
 
       <div className="flex gap-1 shrink-0">
         <button
+          onClick={togglePhotos}
+          className="rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          aria-label={`Attach photo to "${task.title}"`}
+          title="Attach photo"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+          </svg>
+        </button>
+        <button
           onClick={() => setIsEditing(true)}
-          className="rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100"
+          className="rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
           aria-label={`Edit "${task.title}"`}
         >
           Edit
@@ -440,7 +439,7 @@ export const TaskItem = ({ task, categoryName, tags = [], allTags = [], dependen
         <button
           onClick={handleDelete}
           disabled={loading}
-          className="rounded px-2 py-1 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+          className="rounded px-2 py-1 text-sm text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/30 disabled:opacity-50"
           aria-label={`Delete "${task.title}"`}
         >
           Delete

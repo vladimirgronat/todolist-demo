@@ -30,7 +30,7 @@ export const EnvironmentSwitcher = ({
       value={activeEnvironmentId}
       onChange={handleChange}
       aria-label="Switch environment"
-      className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-700 transition-colors hover:border-gray-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:border-gray-600"
+      className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-1.5 text-sm text-gray-700 transition-colors hover:border-gray-300 focus:border-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-gray-600"
     >
       {environments.map((env) => (
         <option key={env.id} value={env.id}>

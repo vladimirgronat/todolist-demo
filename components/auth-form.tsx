@@ -46,42 +46,42 @@ export const AuthForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-sm">
-      <h1 className="text-2xl font-bold text-center">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full max-w-sm rounded-2xl bg-white p-6 shadow-lg dark:bg-gray-900">
+      <h1 className="text-2xl font-bold text-center dark:text-gray-100">
         {isSignUp ? "Create Account" : "Sign In"}
       </h1>
 
       {error && (
         <div
           role="alert"
-          className="rounded bg-red-100 px-4 py-2 text-sm text-red-700"
+          className="rounded-lg bg-red-50 border border-red-200 px-4 py-2 text-sm text-red-700 dark:bg-red-950/30 dark:border-red-900 dark:text-red-400"
         >
           {error}
         </div>
       )}
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Email</span>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-sm font-medium dark:text-gray-300">Email</span>
         <input
           type="email"
           required
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="rounded border px-3 py-2"
+          className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm transition-colors hover:border-gray-300 focus:border-blue-500 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-gray-600 dark:focus:bg-gray-900"
           aria-label="Email"
           autoComplete="email"
         />
       </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Password</span>
+      <label className="flex flex-col gap-1.5">
+        <span className="text-sm font-medium dark:text-gray-300">Password</span>
         <input
           type="password"
           required
           minLength={6}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="rounded border px-3 py-2"
+          className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm transition-colors hover:border-gray-300 focus:border-blue-500 focus:bg-white dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:border-gray-600 dark:focus:bg-gray-900"
           aria-label="Password"
           autoComplete={isSignUp ? "new-password" : "current-password"}
         />
@@ -90,22 +90,22 @@ export const AuthForm = () => {
       <button
         type="submit"
         disabled={loading}
-        className="rounded bg-blue-600 px-4 py-2 text-white font-medium hover:bg-blue-700 disabled:opacity-50"
+        className="rounded-lg bg-blue-600 px-4 py-2.5 text-sm text-white font-medium shadow-sm transition-all hover:bg-blue-700 hover:shadow active:bg-blue-800 disabled:opacity-50 disabled:shadow-none"
       >
         {loading ? "Loading…" : isSignUp ? "Sign Up" : "Sign In"}
       </button>
 
       <div className="relative flex items-center gap-2">
-        <div className="flex-1 border-t" />
+        <div className="flex-1 border-t border-gray-200 dark:border-gray-700" />
         <span className="text-xs text-gray-400">or</span>
-        <div className="flex-1 border-t" />
+        <div className="flex-1 border-t border-gray-200 dark:border-gray-700" />
       </div>
 
       <button
         type="button"
         onClick={handleGoogleSignIn}
         disabled={googleLoading || loading}
-        className="flex items-center justify-center gap-2 rounded border px-4 py-2 text-sm font-medium hover:bg-gray-50 disabled:opacity-50"
+        className="flex items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm font-medium transition-colors hover:bg-gray-100 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
         aria-label="Sign in with Google"
       >
         <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">

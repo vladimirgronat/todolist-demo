@@ -61,6 +61,7 @@ export const PhotoUpload = ({ taskId, isCompletionPhoto = false, onUploadComplet
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     setDragOver(false);
     const file = e.dataTransfer.files?.[0];
     if (file) uploadFile(file);
@@ -69,13 +70,14 @@ export const PhotoUpload = ({ taskId, isCompletionPhoto = false, onUploadComplet
   return (
     <div className="space-y-2">
       <div
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
+        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
+        onDragEnter={(e) => { e.preventDefault(); e.stopPropagation(); setDragOver(true); }}
+        onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragOver(false); }}
         onDrop={handleDrop}
-        className={`flex items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-3 text-sm transition-colors duration-150 ${
+        className={`flex items-center justify-center gap-2 rounded-xl border-2 border-dashed px-4 py-4 text-sm transition-all duration-200 ${
           dragOver
-            ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30"
-            : "border-gray-300 hover:border-gray-400 dark:border-gray-700 dark:hover:border-gray-600"
+            ? "border-blue-400 bg-blue-50 shadow-inner dark:bg-blue-950/30 dark:border-blue-500"
+            : "border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:border-gray-600 dark:hover:bg-gray-750"
         } ${disabled || uploading ? "pointer-events-none opacity-50" : "cursor-pointer"}`}
         onClick={() => inputRef.current?.click()}
         role="button"
