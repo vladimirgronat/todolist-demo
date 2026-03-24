@@ -8,13 +8,13 @@ import {
   apiBadRequest,
 } from "@/lib/api-response";
 
-type RouteContext = { params: Promise<{ id: string }> };
+type RouteContext = { params: Promise<{ envId: string }> };
 
 export const GET = async (request: NextRequest, { params }: RouteContext) => {
   const auth = await authenticateApiKey(request);
   if (!auth) return apiUnauthorized();
 
-  const { id } = await params;
+  const { envId: id } = await params;
   const supabase = createApiSupabaseClient();
 
   // Verify membership
@@ -43,7 +43,7 @@ export const PATCH = async (request: NextRequest, { params }: RouteContext) => {
   const auth = await authenticateApiKey(request);
   if (!auth) return apiUnauthorized();
 
-  const { id } = await params;
+  const { envId: id } = await params;
   const supabase = createApiSupabaseClient();
 
   // Verify ownership
@@ -98,7 +98,7 @@ export const DELETE = async (
   const auth = await authenticateApiKey(request);
   if (!auth) return apiUnauthorized();
 
-  const { id } = await params;
+  const { envId: id } = await params;
   const supabase = createApiSupabaseClient();
 
   // Verify ownership

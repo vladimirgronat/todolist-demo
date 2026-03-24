@@ -10,12 +10,12 @@ import {
 
 export const DELETE = async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string; userId: string }> }
+  { params }: { params: Promise<{ envId: string; userId: string }> }
 ) => {
   const auth = await authenticateApiKey(request);
   if (!auth) return apiUnauthorized();
 
-  const { id: environmentId, userId: targetUserId } = await params;
+  const { envId: environmentId, userId: targetUserId } = await params;
   const supabase = createApiSupabaseClient();
 
   // Verify authenticated user is the owner

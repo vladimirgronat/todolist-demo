@@ -81,7 +81,18 @@ describe("updateTask description validation", () => {
   it("accepts description exactly 2000 characters", async () => {
     const eqMock = vi.fn().mockResolvedValue({ error: null });
     const updateMock = vi.fn().mockReturnValue({ eq: eqMock });
-    mockSupabase.from.mockReturnValue({ update: updateMock });
+    const selectEqSingleMock = vi.fn().mockResolvedValue({
+      data: { user_id: "user-123", environment_id: "env-1" },
+      error: null,
+    });
+    const selectEqMock = vi.fn().mockReturnValue({ single: selectEqSingleMock });
+    const selectMock = vi.fn().mockReturnValue({ eq: selectEqMock });
+    mockSupabase.from.mockImplementation((table: string) => {
+      if (table === "tasks") {
+        return { select: selectMock, update: updateMock };
+      }
+      return { select: selectMock, update: updateMock };
+    });
 
     const { updateTask } = await import("@/app/actions/tasks");
     const formData = new FormData();

@@ -192,10 +192,10 @@ describe("POST /environments", () => {
 describe("GET /environments/:id", () => {
   it("returns 401 without auth", async () => {
     vi.mocked(authenticateApiKey).mockResolvedValue(null);
-    const { GET } = await import("@/app/api/v1/environments/[id]/route");
+    const { GET } = await import("@/app/api/v1/environments/[envId]/route");
     const res = await GET(
       createRequest("http://localhost/api/v1/environments/e1"),
-      { params: Promise.resolve({ id: "e1" }) }
+      { params: Promise.resolve({ envId: "e1" }) }
     );
     expect(res.status).toBe(401);
   });
@@ -204,10 +204,10 @@ describe("GET /environments/:id", () => {
     vi.mocked(authenticateApiKey).mockResolvedValue({ userId: "u1" });
     mockChain.single.mockResolvedValueOnce({ data: null });
 
-    const { GET } = await import("@/app/api/v1/environments/[id]/route");
+    const { GET } = await import("@/app/api/v1/environments/[envId]/route");
     const res = await GET(
       createRequest("http://localhost/api/v1/environments/e1"),
-      { params: Promise.resolve({ id: "e1" }) }
+      { params: Promise.resolve({ envId: "e1" }) }
     );
     expect(res.status).toBe(403);
   });
@@ -230,10 +230,10 @@ describe("GET /environments/:id", () => {
       return c;
     });
 
-    const { GET } = await import("@/app/api/v1/environments/[id]/route");
+    const { GET } = await import("@/app/api/v1/environments/[envId]/route");
     const res = await GET(
       createRequest("http://localhost/api/v1/environments/e1"),
-      { params: Promise.resolve({ id: "e1" }) }
+      { params: Promise.resolve({ envId: "e1" }) }
     );
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -247,14 +247,14 @@ describe("GET /environments/:id", () => {
 describe("PATCH /environments/:id", () => {
   it("returns 401 without auth", async () => {
     vi.mocked(authenticateApiKey).mockResolvedValue(null);
-    const { PATCH } = await import("@/app/api/v1/environments/[id]/route");
+    const { PATCH } = await import("@/app/api/v1/environments/[envId]/route");
     const res = await PATCH(
       createRequest("http://localhost/api/v1/environments/e1", {
         method: "PATCH",
         body: JSON.stringify({ name: "New" }),
         headers: { "content-type": "application/json" },
       }),
-      { params: Promise.resolve({ id: "e1" }) }
+      { params: Promise.resolve({ envId: "e1" }) }
     );
     expect(res.status).toBe(401);
   });
@@ -263,14 +263,14 @@ describe("PATCH /environments/:id", () => {
     vi.mocked(authenticateApiKey).mockResolvedValue({ userId: "u2" });
     mockChain.single.mockResolvedValueOnce({ data: { id: "e1", owner_id: "u1" } });
 
-    const { PATCH } = await import("@/app/api/v1/environments/[id]/route");
+    const { PATCH } = await import("@/app/api/v1/environments/[envId]/route");
     const res = await PATCH(
       createRequest("http://localhost/api/v1/environments/e1", {
         method: "PATCH",
         body: JSON.stringify({ name: "New" }),
         headers: { "content-type": "application/json" },
       }),
-      { params: Promise.resolve({ id: "e1" }) }
+      { params: Promise.resolve({ envId: "e1" }) }
     );
     expect(res.status).toBe(403);
   });
@@ -282,10 +282,10 @@ describe("PATCH /environments/:id", () => {
 describe("DELETE /environments/:id", () => {
   it("returns 401 without auth", async () => {
     vi.mocked(authenticateApiKey).mockResolvedValue(null);
-    const { DELETE } = await import("@/app/api/v1/environments/[id]/route");
+    const { DELETE } = await import("@/app/api/v1/environments/[envId]/route");
     const res = await DELETE(
       createRequest("http://localhost/api/v1/environments/e1", { method: "DELETE" }),
-      { params: Promise.resolve({ id: "e1" }) }
+      { params: Promise.resolve({ envId: "e1" }) }
     );
     expect(res.status).toBe(401);
   });
@@ -294,10 +294,10 @@ describe("DELETE /environments/:id", () => {
     vi.mocked(authenticateApiKey).mockResolvedValue({ userId: "u2" });
     mockChain.single.mockResolvedValueOnce({ data: { id: "e1", owner_id: "u1" } });
 
-    const { DELETE } = await import("@/app/api/v1/environments/[id]/route");
+    const { DELETE } = await import("@/app/api/v1/environments/[envId]/route");
     const res = await DELETE(
       createRequest("http://localhost/api/v1/environments/e1", { method: "DELETE" }),
-      { params: Promise.resolve({ id: "e1" }) }
+      { params: Promise.resolve({ envId: "e1" }) }
     );
     expect(res.status).toBe(403);
   });
@@ -317,10 +317,10 @@ describe("DELETE /environments/:id", () => {
       return c;
     });
 
-    const { DELETE } = await import("@/app/api/v1/environments/[id]/route");
+    const { DELETE } = await import("@/app/api/v1/environments/[envId]/route");
     const res = await DELETE(
       createRequest("http://localhost/api/v1/environments/e1", { method: "DELETE" }),
-      { params: Promise.resolve({ id: "e1" }) }
+      { params: Promise.resolve({ envId: "e1" }) }
     );
     // We expect either 200 or 403 depending on mock ordering — validate no crash
     expect([200, 403]).toContain(res.status);

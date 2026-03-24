@@ -9,12 +9,12 @@ import {
 
 export const POST = async (
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ envId: string }> }
 ) => {
   const auth = await authenticateApiKey(request);
   if (!auth) return apiUnauthorized();
 
-  const { id: environmentId } = await params;
+  const { envId: environmentId } = await params;
   const supabase = createApiSupabaseClient();
 
   // Verify user is not the owner (owners can't leave)

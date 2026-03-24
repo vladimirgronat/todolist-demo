@@ -47,9 +47,9 @@ describe("GET /environments/:id/members", () => {
 
   it("returns 401 without auth", async () => {
     vi.mocked(authenticateApiKey).mockResolvedValue(null);
-    const { GET } = await import("@/app/api/v1/environments/[id]/members/route");
+    const { GET } = await import("@/app/api/v1/environments/[envId]/members/route");
     const res = await GET(createRequest(url), {
-      params: Promise.resolve({ id: envId }),
+      params: Promise.resolve({ envId }),
     });
     expect(res.status).toBe(401);
   });
@@ -60,9 +60,9 @@ describe("GET /environments/:id/members", () => {
     c.maybeSingle.mockResolvedValue({ data: null });
     mockSupabase.from.mockReturnValue(c);
 
-    const { GET } = await import("@/app/api/v1/environments/[id]/members/route");
+    const { GET } = await import("@/app/api/v1/environments/[envId]/members/route");
     const res = await GET(createRequest(url), {
-      params: Promise.resolve({ id: envId }),
+      params: Promise.resolve({ envId }),
     });
     expect(res.status).toBe(403);
   });
@@ -87,9 +87,9 @@ describe("GET /environments/:id/members", () => {
       return c;
     });
 
-    const { GET } = await import("@/app/api/v1/environments/[id]/members/route");
+    const { GET } = await import("@/app/api/v1/environments/[envId]/members/route");
     const res = await GET(createRequest(url), {
-      params: Promise.resolve({ id: envId }),
+      params: Promise.resolve({ envId }),
     });
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -105,14 +105,14 @@ describe("POST /environments/:id/members", () => {
 
   it("returns 401 without auth", async () => {
     vi.mocked(authenticateApiKey).mockResolvedValue(null);
-    const { POST } = await import("@/app/api/v1/environments/[id]/members/route");
+    const { POST } = await import("@/app/api/v1/environments/[envId]/members/route");
     const res = await POST(
       createRequest(url, {
         method: "POST",
         body: JSON.stringify({ email: "test@test.com" }),
         headers: { "content-type": "application/json" },
       }),
-      { params: Promise.resolve({ id: envId }) }
+      { params: Promise.resolve({ envId }) }
     );
     expect(res.status).toBe(401);
   });
@@ -125,14 +125,14 @@ describe("POST /environments/:id/members", () => {
       return c;
     });
 
-    const { POST } = await import("@/app/api/v1/environments/[id]/members/route");
+    const { POST } = await import("@/app/api/v1/environments/[envId]/members/route");
     const res = await POST(
       createRequest(url, {
         method: "POST",
         body: JSON.stringify({ email: "test@test.com" }),
         headers: { "content-type": "application/json" },
       }),
-      { params: Promise.resolve({ id: envId }) }
+      { params: Promise.resolve({ envId }) }
     );
     expect(res.status).toBe(403);
   });
@@ -145,14 +145,14 @@ describe("POST /environments/:id/members", () => {
       return c;
     });
 
-    const { POST } = await import("@/app/api/v1/environments/[id]/members/route");
+    const { POST } = await import("@/app/api/v1/environments/[envId]/members/route");
     const res = await POST(
       createRequest(url, {
         method: "POST",
         body: JSON.stringify({}),
         headers: { "content-type": "application/json" },
       }),
-      { params: Promise.resolve({ id: envId }) }
+      { params: Promise.resolve({ envId }) }
     );
     expect(res.status).toBe(400);
   });
@@ -167,10 +167,10 @@ describe("DELETE /environments/:id/members/:userId", () => {
   it("returns 401 without auth", async () => {
     vi.mocked(authenticateApiKey).mockResolvedValue(null);
     const { DELETE } = await import(
-      "@/app/api/v1/environments/[id]/members/[userId]/route"
+      "@/app/api/v1/environments/[envId]/members/[userId]/route"
     );
     const res = await DELETE(createRequest(url, { method: "DELETE" }), {
-      params: Promise.resolve({ id: envId, userId: targetUserId }),
+      params: Promise.resolve({ envId, userId: targetUserId }),
     });
     expect(res.status).toBe(401);
   });
@@ -184,10 +184,10 @@ describe("DELETE /environments/:id/members/:userId", () => {
     });
 
     const { DELETE } = await import(
-      "@/app/api/v1/environments/[id]/members/[userId]/route"
+      "@/app/api/v1/environments/[envId]/members/[userId]/route"
     );
     const res = await DELETE(createRequest(url, { method: "DELETE" }), {
-      params: Promise.resolve({ id: envId, userId: targetUserId }),
+      params: Promise.resolve({ envId, userId: targetUserId }),
     });
     expect(res.status).toBe(403);
   });
@@ -202,10 +202,10 @@ describe("DELETE /environments/:id/members/:userId", () => {
 
     const selfUrl = `http://localhost/api/v1/environments/${envId}/members/${userId}`;
     const { DELETE } = await import(
-      "@/app/api/v1/environments/[id]/members/[userId]/route"
+      "@/app/api/v1/environments/[envId]/members/[userId]/route"
     );
     const res = await DELETE(createRequest(selfUrl, { method: "DELETE" }), {
-      params: Promise.resolve({ id: envId, userId }),
+      params: Promise.resolve({ envId, userId }),
     });
     expect(res.status).toBe(400);
   });
@@ -219,9 +219,9 @@ describe("POST /environments/:id/members/leave", () => {
 
   it("returns 401 without auth", async () => {
     vi.mocked(authenticateApiKey).mockResolvedValue(null);
-    const { POST } = await import("@/app/api/v1/environments/[id]/members/leave/route");
+    const { POST } = await import("@/app/api/v1/environments/[envId]/members/leave/route");
     const res = await POST(createRequest(url, { method: "POST" }), {
-      params: Promise.resolve({ id: envId }),
+      params: Promise.resolve({ envId }),
     });
     expect(res.status).toBe(401);
   });
@@ -234,9 +234,9 @@ describe("POST /environments/:id/members/leave", () => {
       return c;
     });
 
-    const { POST } = await import("@/app/api/v1/environments/[id]/members/leave/route");
+    const { POST } = await import("@/app/api/v1/environments/[envId]/members/leave/route");
     const res = await POST(createRequest(url, { method: "POST" }), {
-      params: Promise.resolve({ id: envId }),
+      params: Promise.resolve({ envId }),
     });
     expect(res.status).toBe(403);
   });
