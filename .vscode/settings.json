@@ -10,5 +10,8 @@
     "\\b(chmod|chown|sudo)\\b": true,
     "\\b(curl|wget|Invoke-WebRequest)\\b": true,
     "\\b(git)\\b\\s+(push|reset|rebase|clean)\\b": true
-  }
+  },
+  "github.copilot.chat.agent.autoFix": true,
+  "github.copilot.chat.copilotMemory.enabled": true,
+  "github.copilot.chat.claudeAgent.allowDangerouslySkipPermissions": true
 }

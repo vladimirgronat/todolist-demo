@@ -8,6 +8,7 @@
     "prebuild": "tsx scripts/migrate.ts || echo 'Migration skipped (no SUPABASE_ACCESS_TOKEN)'",
     "build": "next build",
     "start": "next start",
+    "mcp:server": "tsx mcp/todolist-server.ts",
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -27,11 +28,13 @@
     "@capacitor/cli": "^8.2.0",
     "@capacitor/core": "^8.2.0",
     "@capacitor/ios": "^8.2.0",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "@supabase/ssr": "^0.9.0",
     "@supabase/supabase-js": "^2.99.2",
     "next": "16.1.7",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",

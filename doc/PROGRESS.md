@@ -1,3 +1,20 @@
+## MCP Server Execution - 2026-03-24
+
+- Execution mode: backend
+- Scope: first-cut stdio MCP server over existing REST API with Bearer API-key auth
+- Overall status: implemented
+
+| Task ID | Task | Status | Evidence | Notes |
+|---------|------|--------|----------|-------|
+| M1 | Fetch client for REST API reuse | implemented | `mcp/api-client.ts` | Reads `TODOLIST_API_BASE_URL` and `TODOLIST_API_KEY`, normalizes JSON success/error handling |
+| M2 | Stdio MCP server bootstrap | implemented | `mcp/todolist-server.ts` | Uses `McpServer` + `StdioServerTransport` |
+| M3 | v1 tool surface | implemented | `mcp/todolist-server.ts` | Environments, context, task list/get/create/update/state/delete only |
+| M4 | MCP prompt | implemented | `mcp/todolist-server.ts` | `task_planning_prompt` added for safe tool usage |
+| M5 | Developer setup docs | implemented | `doc/MCP.md` | Env vars, host config example, tool list, v1 exclusions |
+| M6 | Package entrypoint | implemented | `package.json` | `npm run mcp:server` |
+
+- Verification: MCP files pass targeted diagnostics and targeted ESLint; full `npx tsc --noEmit` is blocked by pre-existing `.next` validator errors and a pre-existing `__tests__/components/task-item.test.tsx` type error; full `npm run lint` completes with existing warnings in generated Android asset files
+
 # Implementation Progress Ledger
 
 ## Source SPEC
