@@ -1,6 +1,39 @@
 export interface Database {
   public: {
     Tables: {
+      api_keys: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          key_hash: string;
+          key_prefix: string;
+          last_used_at: string | null;
+          created_at: string;
+          revoked_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          key_hash: string;
+          key_prefix: string;
+          last_used_at?: string | null;
+          created_at?: string;
+          revoked_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          key_hash?: string;
+          key_prefix?: string;
+          last_used_at?: string | null;
+          created_at?: string;
+          revoked_at?: string | null;
+        };
+        Relationships: [];
+      };
       categories: {
         Row: {
           id: string;
@@ -225,6 +258,10 @@ export interface Database {
       };
       get_user_id_by_email: {
         Args: { email_input: string };
+        Returns: string | null;
+      };
+      verify_api_key: {
+        Args: { p_key_hash: string };
         Returns: string | null;
       };
     };
