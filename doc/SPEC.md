@@ -286,6 +286,214 @@ Existing data must be migrated to the new schema:
 - **Mobile**: Capacitor (Android + iOS native shell)
 - **Testing**: Vitest + React Testing Library (unit/component), Playwright (E2E)
 
+## Public REST API
+
+### Overview
+
+All application data is accessible through a versioned public REST API. The API serves both internal clients (web app, mobile apps) and external third-party integrations.
+
+- **Base URL**: `/api/v1`
+- **Format**: JSON request and response bodies
+- **Authentication**: API key via `Authorization: Bearer <api_key>` header
+- **Versioning**: URL-path versioning (`/api/v1/`, future `/api/v2/`, etc.)
+
+### Authentication & API Keys
+
+- Users generate API keys from their account settings.
+- Each API key is scoped to the user — it inherits the same environment access as the user.
+- API keys are stored as hashed values in the database (never stored in plain text).
+- Keys can be revoked (soft-deleted) by the user at any time.
+- Each request must include the `Authorization: Bearer <api_key>` header.
+- Invalid or missing key → HTTP 401 Unauthorized.
+- Max 5 active API keys per user.
+
+#### API Key Data Model
+
+| Field        | Type        | Required | Description                              |
+|--------------|-------------|----------|------------------------------------------|
+| id           | uuid        | yes      | Unique identifier (auto-generated)       |
+| user_id      | uuid        | yes      | FK → auth.users                          |
+| name         | text        | yes      | User-friendly label (max 100 chars)      |
+| key_hash     | text        | yes      | SHA-256 hash of the API key              |
+| key_prefix   | text        | yes      | First 8 chars of the key (for display)   |
+| last_used_at | timestamptz | no       | Timestamp of last successful request     |
+| created_at   | timestamptz | yes      | Timestamp of creation                    |
+| revoked_at   | timestamptz | no       | Timestamp of revocation (null = active)  |
+
+### Common Conventions
+
+#### Pagination
+
+All list endpoints support cursor-based pagination:
+
+| Parameter | Type   | Default | Description                              |
+|-----------|--------|---------|------------------------------------------|
+| limit     | integer| 50      | Items per page (max 100)                 |
+| cursor    | string | null    | Opaque cursor from previous response     |
+
+Response envelope for list endpoints:
+
+```json
+{
+  "data": [...],
+  "pagination": {
+    "next_cursor": "eyJpZCI6...",
+    "has_more": true
+  }
+}
+```
+
+#### Filtering
+
+List endpoints support filtering via query parameters:
+
+- `state` — filter by task state (e.g., `?state=planned`)
+- `category_id` — filter by category UUID
+- `tag_id` — filter by tag UUID
+- `assigned_to` — filter by assignee UUID
+- `assignment_status` — filter by assignment status
+
+Multiple filters can be combined (AND logic).
+
+#### Sorting
+
+- `sort` — field name (e.g., `created_at`, `updated_at`, `title`)
+- `order` — `asc` or `desc` (default: `desc`)
+
+#### Error Responses
+
+All errors follow a consistent format:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Title is required",
+    "details": { "field": "title" }
+  }
+}
+```
+
+Standard error codes:
+
+| HTTP Status | Code                | Description                          |
+|-------------|---------------------|--------------------------------------|
+| 400         | VALIDATION_ERROR    | Invalid input                        |
+| 401         | UNAUTHORIZED        | Missing or invalid API key           |
+| 403         | FORBIDDEN           | No access to requested resource      |
+| 404         | NOT_FOUND           | Resource does not exist              |
+| 409         | CONFLICT            | Conflict (e.g., circular dependency) |
+| 422         | UNPROCESSABLE       | Semantic error (e.g., task has unfinished deps) |
+| 500         | INTERNAL_ERROR      | Unexpected server error              |
+
+### Resource Endpoints
+
+#### Environments
+
+| Method | Endpoint                                   | Description                        |
+|--------|--------------------------------------------|------------------------------------|
+| GET    | `/api/v1/environments`                     | List user's environments           |
+| POST   | `/api/v1/environments`                     | Create a new environment           |
+| GET    | `/api/v1/environments/:id`                 | Get environment details            |
+| PATCH  | `/api/v1/environments/:id`                 | Update environment (rename)        |
+| DELETE | `/api/v1/environments/:id`                 | Delete environment (owner only)    |
+
+#### Team Members
+
+| Method | Endpoint                                               | Description                        |
+|--------|---------------------------------------------------------|------------------------------------|
+| GET    | `/api/v1/environments/:id/members`                     | List environment members           |
+| POST   | `/api/v1/environments/:id/members`                     | Invite a member by email           |
+| DELETE | `/api/v1/environments/:id/members/:user_id`            | Remove a member (owner only)       |
+| POST   | `/api/v1/environments/:id/members/leave`               | Leave environment (non-owner)      |
+
+#### Invitations
+
+| Method | Endpoint                                   | Description                        |
+|--------|--------------------------------------------|------------------------------------|
+| GET    | `/api/v1/invitations`                      | List pending invitations for user  |
+| POST   | `/api/v1/invitations/:id/accept`           | Accept an invitation               |
+| POST   | `/api/v1/invitations/:id/decline`          | Decline an invitation              |
+
+#### Tasks
+
+| Method | Endpoint                                           | Description                        |
+|--------|----------------------------------------------------|------------------------------------|
+| GET    | `/api/v1/environments/:env_id/tasks`               | List tasks (with filtering/sorting/pagination) |
+| POST   | `/api/v1/environments/:env_id/tasks`               | Create a new task                  |
+| GET    | `/api/v1/environments/:env_id/tasks/:id`           | Get task details (includes tags, dependencies) |
+| PATCH  | `/api/v1/environments/:env_id/tasks/:id`           | Update task fields                 |
+| DELETE | `/api/v1/environments/:env_id/tasks/:id`           | Delete a task                      |
+| POST   | `/api/v1/environments/:env_id/tasks/:id/state`     | Change task state                  |
+| POST   | `/api/v1/environments/:env_id/tasks/:id/assign`    | Assign task to a member            |
+| DELETE | `/api/v1/environments/:env_id/tasks/:id/assign`    | Unassign task                      |
+| POST   | `/api/v1/environments/:env_id/tasks/:id/accept`    | Accept assignment                  |
+| POST   | `/api/v1/environments/:env_id/tasks/:id/refuse`    | Refuse assignment (with reason)    |
+
+#### Task Dependencies
+
+| Method | Endpoint                                                           | Description                        |
+|--------|--------------------------------------------------------------------|------------------------------------|
+| GET    | `/api/v1/environments/:env_id/tasks/:id/dependencies`             | List task's dependencies           |
+| POST   | `/api/v1/environments/:env_id/tasks/:id/dependencies`             | Add a dependency                   |
+| DELETE | `/api/v1/environments/:env_id/tasks/:id/dependencies/:dep_id`    | Remove a dependency                |
+
+#### Task Photos
+
+| Method | Endpoint                                                       | Description                        |
+|--------|----------------------------------------------------------------|------------------------------------|
+| GET    | `/api/v1/environments/:env_id/tasks/:id/photos`               | List task photos (with URLs)       |
+| POST   | `/api/v1/environments/:env_id/tasks/:id/photos`               | Upload a photo (multipart/form-data) |
+| DELETE | `/api/v1/environments/:env_id/tasks/:id/photos/:photo_id`     | Delete a photo                     |
+
+#### Categories
+
+| Method | Endpoint                                               | Description                        |
+|--------|---------------------------------------------------------|------------------------------------|
+| GET    | `/api/v1/environments/:env_id/categories`              | List categories (flat or tree)     |
+| POST   | `/api/v1/environments/:env_id/categories`              | Create a category                  |
+| GET    | `/api/v1/environments/:env_id/categories/:id`          | Get category details               |
+| PATCH  | `/api/v1/environments/:env_id/categories/:id`          | Update category (rename)           |
+| PATCH  | `/api/v1/environments/:env_id/categories/:id/move`     | Move category (re-parent)          |
+| DELETE | `/api/v1/environments/:env_id/categories/:id`          | Delete category                    |
+
+#### Tags
+
+| Method | Endpoint                                           | Description                        |
+|--------|----------------------------------------------------|------------------------------------|
+| GET    | `/api/v1/environments/:env_id/tags`                | List tags                          |
+| POST   | `/api/v1/environments/:env_id/tags`                | Create a tag                       |
+| GET    | `/api/v1/environments/:env_id/tags/:id`            | Get tag details                    |
+| PATCH  | `/api/v1/environments/:env_id/tags/:id`            | Update tag (rename, color)         |
+| DELETE | `/api/v1/environments/:env_id/tags/:id`            | Delete a tag                       |
+| POST   | `/api/v1/environments/:env_id/tags/reorder`        | Batch reorder tags                 |
+
+#### Task–Tag Association
+
+| Method | Endpoint                                                       | Description                        |
+|--------|----------------------------------------------------------------|------------------------------------|
+| POST   | `/api/v1/environments/:env_id/tasks/:id/tags`                 | Add tag to task                    |
+| DELETE | `/api/v1/environments/:env_id/tasks/:id/tags/:tag_id`         | Remove tag from task               |
+
+### Business Rules (enforced by API)
+
+All existing business rules from the web application are enforced identically in the API:
+
+- Task state transitions follow the same workflow (planned → in_progress → finished; dependent state is automatic).
+- Circular dependency prevention applies to dependency creation.
+- Photo limits (max 10 per task, max 5 MB, JPEG/PNG/WebP only) apply to uploads.
+- Category depth limit (max 50 levels) applies to creation and moves.
+- Assignment rules (only environment members, pending/accepted/refused flow) apply.
+- Environment access is scoped — API key owner must be a member of the environment.
+
+### Security
+
+- API keys are hashed (SHA-256) before storage — raw keys are only shown once at creation time.
+- All endpoints enforce environment membership checks (equivalent to RLS).
+- Input validation matches Server Action validation (max lengths, required fields, enum values).
+- File uploads are validated for type and size before storage.
+- API key abuse (invalid key attempts) should be logged for monitoring.
+
 ## Out of Scope
 
 - Real-time sync / live presence (shared environments use standard request-response, not live collaboration).

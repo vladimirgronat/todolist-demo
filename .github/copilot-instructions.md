@@ -65,6 +65,7 @@ Specialized agents are in `.github/agents/`. Use them for domain-specific work:
 | Agent | Domain |
 |-------|--------|
 | **planner** | Feature planning, task breakdown, cross-cutting coordination — delegates to other agents |
+| **manager** | Execution orchestration from approved plans/specs, dependency-aware delegation, implementation status tracking |
 | **frontend** | UI components, Tailwind, pages, responsive design, dark mode, accessibility |
 | **backend** | Server Actions, Supabase, RLS, migrations, auth, database schema |
 | **testing** | Vitest, Playwright, test strategy, accessibility & visual regression tests |
@@ -75,6 +76,7 @@ Specialized agents are in `.github/agents/`. Use them for domain-specific work:
 | **reviewer** | Architecture review, Next.js patterns, Supabase usage, security audit, code quality |
 
 For multi-step or cross-cutting work, start with the **planner** agent.
+For implementation execution from an approved plan/spec, use the **manager** agent.
 
 ## Skills
 
