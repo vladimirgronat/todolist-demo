@@ -9,6 +9,7 @@
     "build": "next build",
     "start": "next start",
     "mcp:server": "tsx mcp/todolist-server.ts",
+    "mcp:server:http": "tsx mcp/todolist-server-http.ts",
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
